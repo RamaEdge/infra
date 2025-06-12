@@ -1,0 +1,207 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: harbor
+      meta.helm.sh/release-namespace: harbor
+    labels:
+      app: harbor
+      app.kubernetes.io/instance: harbor
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: harbor
+      app.kubernetes.io/part-of: harbor
+      app.kubernetes.io/version: 2.13.1
+      chart: harbor
+      heritage: Helm
+      release: harbor
+    name: harbor-core
+    namespace: harbor
+  spec:
+    clusterIP: 10.43.194.235
+    clusterIPs:
+    - 10.43.194.235
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http-web
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: harbor
+      component: core
+      release: harbor
+    sessionAffinity: None
+    type: ClusterIP
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: harbor
+      meta.helm.sh/release-namespace: harbor
+    labels:
+      app: harbor
+      app.kubernetes.io/instance: harbor
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: harbor
+      app.kubernetes.io/part-of: harbor
+      app.kubernetes.io/version: 2.13.1
+      chart: harbor
+      heritage: Helm
+      release: harbor
+    name: harbor-jobservice
+    namespace: harbor
+  spec:
+    clusterIP: 10.43.127.47
+    clusterIPs:
+    - 10.43.127.47
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http-jobservice
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: harbor
+      component: jobservice
+      release: harbor
+    sessionAffinity: None
+    type: ClusterIP
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: harbor
+      meta.helm.sh/release-namespace: harbor
+    labels:
+      app: harbor
+      app.kubernetes.io/instance: harbor
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: harbor
+      app.kubernetes.io/part-of: harbor
+      app.kubernetes.io/version: 2.13.1
+      chart: harbor
+      heritage: Helm
+      release: harbor
+    name: harbor-portal
+    namespace: harbor
+  spec:
+    clusterIP: 10.43.79.90
+    clusterIPs:
+    - 10.43.79.90
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: harbor
+      component: portal
+      release: harbor
+    sessionAffinity: None
+    type: ClusterIP
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: harbor
+      meta.helm.sh/release-namespace: harbor
+    labels:
+      app: harbor
+      app.kubernetes.io/instance: harbor
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: harbor
+      app.kubernetes.io/part-of: harbor
+      app.kubernetes.io/version: 2.13.1
+      chart: harbor
+      heritage: Helm
+      release: harbor
+    name: harbor-registry
+    namespace: harbor
+  spec:
+    clusterIP: 10.43.187.29
+    clusterIPs:
+    - 10.43.187.29
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http-registry
+      port: 5000
+      protocol: TCP
+      targetPort: 5000
+    - name: http-controller
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: harbor
+      component: registry
+      release: harbor
+    sessionAffinity: None
+    type: ClusterIP
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: postgres
+    name: postgres-service
+    namespace: harbor
+  spec:
+    clusterIP: 10.43.169.109
+    clusterIPs:
+    - 10.43.169.109
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - port: 5432
+      protocol: TCP
+      targetPort: 5432
+    selector:
+      app: postgres
+    sessionAffinity: None
+    type: ClusterIP
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: redis
+    name: redis-service
+    namespace: harbor
+  spec:
+    clusterIP: 10.43.55.159
+    clusterIPs:
+    - 10.43.55.159
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - port: 6379
+      protocol: TCP
+      targetPort: 6379
+    selector:
+      app: redis
+    sessionAffinity: None
+    type: ClusterIP
+    loadBalancer: {}
+kind: List
+metadata:

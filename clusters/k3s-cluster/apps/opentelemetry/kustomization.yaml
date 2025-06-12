@@ -1,0 +1,14 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: opentelemetry
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: opentelemetry-manifests
+  path: "./manifests"
+  prune: true
+  targetNamespace: opentelemetry-system
+  wait: true
