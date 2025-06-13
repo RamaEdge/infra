@@ -5,6 +5,7 @@ namespace: harbor
 
 resources:
   - namespace.yaml
+  - helmrepository.yaml
   - postgres.yaml
   - redis.yaml
   - helmrelease.yaml
