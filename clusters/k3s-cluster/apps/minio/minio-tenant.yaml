@@ -6,7 +6,8 @@ metadata:
 spec:
   image: quay.io/minio/minio:RELEASE.2024-05-10T01-41-38Z.arm64
   pools:
-    - servers: 1
+    - name: pool-0
+      servers: 1
       volumesPerServer: 1
       size: 300Gi
       storageClassName: local-path
