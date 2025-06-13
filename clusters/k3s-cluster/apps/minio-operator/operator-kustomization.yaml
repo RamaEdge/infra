@@ -5,6 +5,7 @@ namespace: minio-operator
 
 resources:
   - namespace.yaml
+  - helmrepository.yaml
   - operator-helmrelease.yaml
 
 # MinIO Operator HelmRelease
