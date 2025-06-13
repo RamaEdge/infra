@@ -1,37 +1,41 @@
-# RamaEdge Infrastructure
+# Infrastructure GitOps Repository
 
-This repository contains the infrastructure-as-code definitions for the RamaEdge Kubernetes cluster.
+This repository contains the GitOps configuration for deploying Harbor, MinIO, and related services on a k3s cluster using Flux.
 
-## Structure
+## Prerequisites
 
-- `clusters/k3s-cluster/` - Cluster-specific configurations
-  - `flux-system/` - Flux system configuration
-  - `apps/` - Application deployments
-- `base/` - Base configurations for reusable components
+- A running k3s cluster.
+- Flux installed and configured.
+- TLS certificates and keys for ingress (stored as Kubernetes secrets).
+- Required credentials (stored as Kubernetes secrets).
 
-## Applications
+## Secret Management
 
-### Harbor
-Container registry for storing and managing container images.
-- **Namespace**: `harbor`
-- **Access**: https://harbor.ramaedge.local
+The following secrets are required and must be created locally (not managed by Flux):
 
-### MinIO
-S3-compatible object storage with 300GB capacity.
-- **Namespace**: `minio-tenant`
-- **Console**: https://console.ramaedge.local
-- **API**: https://minio.ramaedge.local
+- **TLS Secret:** `ramaedge-tls-secret` (for ingress TLS)
+- **MinIO Credentials:** `minio-credentials` (username: admin, password: RamaedgeMinio692#)
+- **Harbor DB Credentials:** `harbor-db-credentials` (username: harbor, password: RamaedgeHarbor692#)
 
-### OpenTelemetry
-Observability and telemetry collection.
-- **Namespace**: `opentelemetry-system`
+To create these secrets, run:
+
+```bash
+kubectl create secret tls ramaedge-tls-secret --cert=/path/to/cert.crt --key=/path/to/key.key
+kubectl create secret generic minio-credentials --from-literal=username=admin --from-literal=password=RamaedgeMinio692#
+kubectl create secret generic harbor-db-credentials --from-literal=username=harbor --from-literal=password=RamaedgeHarbor692#
+```
 
 ## Deployment
 
-This repository is automatically deployed using Flux GitOps on the k3s cluster.
+1. Ensure all required secrets are created.
+2. Push changes to this repository.
+3. Flux will automatically deploy the infrastructure.
 
-## Security
+## Components
 
-- Secrets are managed locally on the cluster
-- TLS certificates are stored as Kubernetes secrets
-- No sensitive data is committed to this repository 
+- **Harbor:** Container registry with external PostgreSQL and Redis.
+- **MinIO:** Object storage with 300Gi persistent storage.
+
+## Troubleshooting
+
+If you encounter issues, check the Flux logs and ensure all secrets are correctly configured. 
