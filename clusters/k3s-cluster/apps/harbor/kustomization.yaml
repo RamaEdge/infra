@@ -6,7 +6,7 @@ namespace: harbor
 resources:
   - postgres.yaml
   - redis.yaml
-  - harbor-values.yaml
+  - helmrelease.yaml
 
 configMapGenerator:
   - name: harbor-config
