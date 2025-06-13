@@ -9,8 +9,15 @@ spec:
     - name: pool-0
       servers: 1
       volumesPerServer: 1
-      size: 300Gi
-      storageClassName: local-path
+      volumeClaimTemplate:
+        metadata:
+          name: data
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 300Gi
+          storageClassName: local-path
   mountPath: /export
   env:
     - name: MINIO_ROOT_USER
