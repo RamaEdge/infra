@@ -1,0 +1,114 @@
+expose:
+  type: ingress
+  tls:
+    enabled: true
+    certSource: secret
+    secret:
+      secretName: ramaedge-tls-secret
+  ingress:
+    hosts:
+      core: harbor.ramaedge.local
+    className: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+
+externalURL: https://harbor.ramaedge.local
+
+# Use external PostgreSQL
+database:
+  type: external
+  external:
+    host: postgres-service.harbor.svc.cluster.local
+    port: 5432
+    username: harbor
+    password: harbor123
+    coreDatabase: harbor
+
+# Use external Redis
+redis:
+  type: external
+  external:
+    addr: redis-service.harbor.svc.cluster.local:6379
+
+# Harbor components with ARM images
+core:
+  image:
+    repository: goharbor/harbor-core
+    tag: v2.9.0
+  replicas: 1
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+registry:
+  image:
+    repository: goharbor/registry-photon
+    tag: v2.9.0
+  replicas: 1
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+portal:
+  image:
+    repository: goharbor/harbor-portal
+    tag: v2.9.0
+  replicas: 1
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 50m
+    limits:
+      memory: 128Mi
+      cpu: 100m
+
+jobservice:
+  image:
+    repository: goharbor/harbor-jobservice
+    tag: v2.9.0
+  replicas: 1
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 50m
+    limits:
+      memory: 256Mi
+      cpu: 200m
+
+trivy:
+  enabled: true
+  image:
+    repository: goharbor/trivy-adapter-photon
+    tag: v2.9.0
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 50m
+    limits:
+      memory: 256Mi
+      cpu: 200m
+
+# Persistence
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      storageClass: local-path
+      size: 20Gi
+    jobservice:
+      jobLog:
+        storageClass: local-path
+        size: 1Gi
+
+# Admin credentials
+harborAdminPassword: Harbor12345 

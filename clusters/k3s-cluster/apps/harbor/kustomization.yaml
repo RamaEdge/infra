@@ -1,10 +1,16 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-resources:
-  - namespace.yaml
-  - deployments.yaml
-  - services.yaml
-  - ingress.yaml
-
 namespace: harbor
+
+resources:
+  - postgres.yaml
+  - redis.yaml
+  - harbor-values.yaml
+
+configMapGenerator:
+  - name: harbor-config
+    literals:
+      - POSTGRES_PASSWORD=harbor123
+      - POSTGRES_USER=harbor
+      - POSTGRES_DB=harbor
