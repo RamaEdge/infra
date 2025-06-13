@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: harbor
 
 resources:
+  - namespace.yaml
   - postgres.yaml
   - redis.yaml
   - helmrelease.yaml
