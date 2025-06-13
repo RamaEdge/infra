@@ -34,7 +34,9 @@ spec:
         host: postgres
         port: 5432
         username: harbor
-        password: RamaedgeHarbor692#
+        passwordSecretRef:
+          name: harbor-db-credentials
+          key: password
         database: harbor
     redis:
       external:
