@@ -8,7 +8,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 1Gi
   storageClassName: local-path
 ---
 apiVersion: apps/v1
@@ -28,25 +28,20 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:15-alpine
+        image: postgres:14
         env:
         - name: POSTGRES_PASSWORD
           valueFrom:
-            configMapKeyRef:
-              name: harbor-config
-              key: POSTGRES_PASSWORD
+            secretKeyRef:
+              name: harbor-db-credentials
+              key: password
         - name: POSTGRES_USER
           valueFrom:
-            configMapKeyRef:
-              name: harbor-config
-              key: POSTGRES_USER
+            secretKeyRef:
+              name: harbor-db-credentials
+              key: username
         - name: POSTGRES_DB
-          valueFrom:
-            configMapKeyRef:
-              name: harbor-config
-              key: POSTGRES_DB
-        - name: PGDATA
-          value: "/var/lib/postgresql/data/pgdata"
+          value: harbor
         ports:
         - containerPort: 5432
         volumeMounts:
@@ -54,8 +49,8 @@ spec:
           mountPath: /var/lib/postgresql/data
         resources:
           requests:
-            memory: 128Mi
-            cpu: 50m
+            memory: 256Mi
+            cpu: 100m
           limits:
             memory: 512Mi
             cpu: 500m
@@ -67,7 +62,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-service
+  name: postgres
   namespace: harbor
 spec:
   selector:

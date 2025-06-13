@@ -6,8 +6,4 @@ namespace: minio-tenant
 resources:
   - minio-simple.yaml
 
-configMapGenerator:
-  - name: minio-config
-    literals:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=minio123
+# Removed hardcoded credentials
