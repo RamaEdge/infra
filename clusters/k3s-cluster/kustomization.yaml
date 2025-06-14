@@ -3,6 +3,9 @@ kind: Kustomization
 
 resources:
   - flux-system
-  - apps/harbor
+  - apps/harbor/namespace.yaml
+  - apps/harbor/postgres.yaml
+  - apps/harbor/redis.yaml
+  - apps/harbor/helmrelease.yaml
   - apps/minio
   - apps/minio-operator 
