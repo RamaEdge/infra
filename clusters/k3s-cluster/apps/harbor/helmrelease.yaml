@@ -22,31 +22,89 @@ spec:
         name: harbor
         namespace: flux-system
   values:
-    # Add your Harbor Helm values here
     externalURL: https://harbor.ramaedge.local
-    persistence:
-      enabled: true
-      persistentVolumeClaim:
-        registry:
-          size: 10Gi
-        chartmuseum:
-          size: 5Gi
-        jobservice:
-          size: 1Gi
-        database:
-          size: 1Gi
-        redis:
-          size: 1Gi
+    imagePullPolicy: IfNotPresent
+    
+    # Use ARM-based images
+    core:
+      image:
+        repository: goharbor/harbor-core
+        tag: v2.13.1
+    portal:
+      image:
+        repository: goharbor/harbor-portal
+        tag: v2.13.1
+    jobservice:
+      image:
+        repository: goharbor/harbor-jobservice
+        tag: v2.13.1
+    registry:
+      registry:
+        image:
+          repository: goharbor/registry-photon
+          tag: v2.13.1
+      controller:
+        image:
+          repository: goharbor/harbor-registryctl
+          tag: v2.13.1
+    nginx:
+      image:
+        repository: goharbor/nginx-photon
+        tag: v2.13.1
+
+    # External PostgreSQL configuration
     database:
+      type: external
       external:
-        host: postgres
+        host: postgres-service.harbor.svc.cluster.local
         port: 5432
         username: harbor
         passwordSecretRef:
           name: harbor-db-credentials
           key: password
-        database: harbor
+        coreDatabase: harbor
+        sslmode: disable
+
+    # External Redis configuration
     redis:
+      type: external
       external:
-        host: redis
-        port: 6379 
+        addr: redis-service.harbor.svc.cluster.local:6379
+        passwordSecretRef:
+          name: harbor-redis-credentials
+          key: password
+      internal:
+        enabled: false
+
+    # Persistence configuration
+    persistence:
+      enabled: true
+      persistentVolumeClaim:
+        registry:
+          size: 10Gi
+        jobservice:
+          size: 1Gi
+
+    # TLS configuration
+    expose:
+      type: ingress
+      tls:
+        enabled: true
+        certSource: secret
+        secret:
+          secretName: harbor-tls
+      ingress:
+        hosts:
+          core: harbor.ramaedge.local
+        className: traefik
+        annotations:
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+
+    # Disable components we don't need
+    chartmuseum:
+      enabled: false
+    trivy:
+      enabled: false
+    notary:
+      enabled: false 
