@@ -58,11 +58,11 @@ spec:
       external:
         host: postgres-service.harbor.svc.cluster.local
         port: 5432
-        username: harbor
+        username: admin
         passwordSecretRef:
           name: harbor-db-credentials
           key: password
-        coreDatabase: harbor
+        coreDatabase: test
         sslmode: disable
 
     # External Redis configuration
