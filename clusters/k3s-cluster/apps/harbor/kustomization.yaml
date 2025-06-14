@@ -3,8 +3,6 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - deployments.yaml
-  - services.yaml
-  - ingress.yaml
+  - postgres.yaml
+  - redis.yaml
   - helmrelease.yaml
-  - secrets.yaml 

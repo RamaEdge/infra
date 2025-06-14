@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: redis:7-alpine
+        image: arm64v8/redis:7-alpine
         ports:
         - containerPort: 6379
         volumeMounts:
