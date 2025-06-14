@@ -75,6 +75,8 @@ spec:
           key: password
       internal:
         enabled: false
+      harborRedis:
+        enabled: false
 
     # Persistence configuration
     persistence:
