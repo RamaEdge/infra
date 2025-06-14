@@ -62,7 +62,7 @@ spec:
         passwordSecretRef:
           name: harbor-db-credentials
           key: password
-        coreDatabase: test
+        coreDatabase: harbor
         sslmode: disable
 
     # External Redis configuration
