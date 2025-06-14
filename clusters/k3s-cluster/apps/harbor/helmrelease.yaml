@@ -16,7 +16,7 @@ spec:
   chart:
     spec:
       chart: harbor
-      version: 1.14.2
+      version: 2.5.0
       sourceRef:
         kind: HelmRepository
         name: harbor
@@ -29,28 +29,28 @@ spec:
     core:
       image:
         repository: goharbor/harbor-core
-        tag: v2.13.1
+        tag: v2.5.0
     portal:
       image:
         repository: goharbor/harbor-portal
-        tag: v2.13.1
+        tag: v2.5.0
     jobservice:
       image:
         repository: goharbor/harbor-jobservice
-        tag: v2.13.1
+        tag: v2.5.0
     registry:
       registry:
         image:
           repository: goharbor/registry-photon
-          tag: v2.13.1
+          tag: v2.5.0
       controller:
         image:
           repository: goharbor/harbor-registryctl
-          tag: v2.13.1
+          tag: v2.5.0
     nginx:
       image:
         repository: goharbor/nginx-photon
-        tag: v2.13.1
+        tag: v2.5.0
 
     # External PostgreSQL configuration
     database:
