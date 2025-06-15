@@ -22,7 +22,7 @@ spec:
       retries: 3
   values:
     image:
-      repository: docker.io/minio/operator
+      repository: minio/operator
       tag: v5.0.18
       pullPolicy: IfNotPresent
     replicaCount: 1  
