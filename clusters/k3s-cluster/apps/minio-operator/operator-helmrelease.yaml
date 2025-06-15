@@ -33,3 +33,40 @@ spec:
       limits:
         memory: "512Mi"
         cpu: "500m"
+    tenants:
+      - name: minio-tenant
+        namespace: minio-tenant
+        image:
+          repository: quay.io/minio/minio
+          tag: RELEASE.2024-05-10T01-41-38Z.arm64
+          pullPolicy: IfNotPresent
+        pools:
+          - servers: 2
+            name: pool-0
+            volumesPerServer: 2
+            volumeClaimTemplate:
+              metadata:
+                name: data
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 300Gi
+                storageClassName: local-path
+        mountPath: /export
+        env:
+          - name: MINIO_ROOT_USER
+            valueFrom:
+              secretKeyRef:
+                name: minio-credentials
+                key: username
+          - name: MINIO_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: minio-credentials
+                key: password
+        exposeServices:
+          console: true
+          minio: true
+        podManagementPolicy: Parallel
+        requestAutoCert: false
