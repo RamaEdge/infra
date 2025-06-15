@@ -28,15 +28,15 @@ spec:
     # Use ARM-based images
     core:
       image:
-        repository: ghcr.io/octohelm/harbor/core
+        repository: ghcr.io/octohelm/harbor/harbor-core
         tag: v2.13.0
     portal:
       image:
-        repository: ghcr.io/octohelm/harbor/portal
+        repository: ghcr.io/octohelm/harbor/harbor-portal
         tag: v2.13.0
     jobservice:
       image:
-        repository: ghcr.io/octohelm/harbor/jobservice
+        repository: ghcr.io/octohelm/harbor/harbor-jobservice
         tag: v2.13.0
     registry:
       registry:
@@ -45,11 +45,11 @@ spec:
           tag: 2.8.2
       controller:
         image:
-          repository: ghcr.io/octohelm/harbor/registryctl
+          repository: ghcr.io/octohelm/harbor/harbor-registryctl
           tag: v2.13.0
     nginx:
       image:
-        repository: ghcr.io/octohelm/harbor/nginx
+        repository: ghcr.io/octohelm/harbor/harbor-nginx
         tag: v2.13.0
 
     # External PostgreSQL configuration
