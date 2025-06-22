@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: minio-operator
-      version: 5.0.18
+      version: 4.3.7
       sourceRef:
         kind: HelmRepository
         name: minio
@@ -21,29 +21,15 @@ spec:
     remediation:
       retries: 3
   values:
-    operator:
-      image:
-        repository: quay.io/minio/operator
-        tag: v5.0.17
-        pullPolicy: IfNotPresent
-      replicaCount: 1  
-      resources:
-        requests:
-          memory: "256Mi"
-          cpu: "200m"
-        limits:
-          memory: "512Mi"
-          cpu: "500m"
-      env:
-        - name: OPERATOR_STS_ENABLED
-          value: "on"
-        - name: MINIO_CONSOLE_TLS_ENABLE
-          value: "off"
-    console:
-      enabled: true
-      image:
-        repository: quay.io/minio/operator  
-        tag: v5.0.17
-        pullPolicy: IfNotPresent
-    # Remove tenant configuration from operator values
-    # Tenants should be deployed separately using Tenant CRD
+    image:
+      repository: quay.io/minio/operator
+      tag: v4.3.7
+      pullPolicy: IfNotPresent
+    replicaCount: 1  
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "200m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
