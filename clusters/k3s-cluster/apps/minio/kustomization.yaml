@@ -3,5 +3,8 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
+  - tenant.yaml
+
+namespace: minio-tenant
 
 # Removed hardcoded credentials

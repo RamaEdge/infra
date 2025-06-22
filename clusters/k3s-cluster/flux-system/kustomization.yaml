@@ -3,4 +3,6 @@ kind: Kustomization
 
 resources:
   - gotk-sync.yaml
+  - minio-helmrepository.yaml
+  - harbor-helmrepository.yaml
 

@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: minio-operator
-      version: 4.3.7
+      version: 5.0.18
       sourceRef:
         kind: HelmRepository
         name: minio
@@ -21,52 +21,29 @@ spec:
     remediation:
       retries: 3
   values:
-    image:
-      repository: minio/operator
-      tag: v5.0.18
-      pullPolicy: IfNotPresent
-    replicaCount: 1  
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "250m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
-    tenants:
-      - name: minio-tenant
-        namespace: minio-tenant
-        image:
-          repository: quay.io/minio/minio
-          tag: RELEASE.2024-05-10T01-41-38Z.arm64
-          pullPolicy: IfNotPresent
-        pools:
-          - servers: 2
-            name: pool-0
-            volumesPerServer: 2
-            volumeClaimTemplate:
-              metadata:
-                name: data
-              spec:
-                accessModes: ["ReadWriteOnce"]
-                resources:
-                  requests:
-                    storage: 300Gi
-                storageClassName: local-path
-        mountPath: /export
-        env:
-          - name: MINIO_ROOT_USER
-            valueFrom:
-              secretKeyRef:
-                name: minio-credentials
-                key: username
-          - name: MINIO_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: minio-credentials
-                key: password
-        exposeServices:
-          console: true
-          minio: true
-        podManagementPolicy: Parallel
-        requestAutoCert: false
+    operator:
+      image:
+        repository: quay.io/minio/operator
+        tag: v5.0.17
+        pullPolicy: IfNotPresent
+      replicaCount: 1  
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "200m"
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
+      env:
+        - name: OPERATOR_STS_ENABLED
+          value: "on"
+        - name: MINIO_CONSOLE_TLS_ENABLE
+          value: "off"
+    console:
+      enabled: true
+      image:
+        repository: quay.io/minio/operator  
+        tag: v5.0.17
+        pullPolicy: IfNotPresent
+    # Remove tenant configuration from operator values
+    # Tenants should be deployed separately using Tenant CRD
