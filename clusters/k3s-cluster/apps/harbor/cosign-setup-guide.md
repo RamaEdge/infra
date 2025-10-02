@@ -2,11 +2,11 @@
 
 ## Overview
 
-Harbor 2.14.0 supports Cosign for container image signing and verification, providing enhanced security for your container registry. Cosign allows you to sign container images and verify their integrity and authenticity.
+Harbor 2.13.0 supports Cosign for container image signing and verification, providing enhanced security for your container registry. Cosign allows you to sign container images and verify their integrity and authenticity.
 
 ## Prerequisites
 
-- Harbor 2.14.0 or later (✅ Currently deployed)
+- Harbor 2.13.0 or later (✅ Currently deployed)
 - Cosign CLI installed on your local machine
 - Access to Harbor web interface with project admin privileges
 
