@@ -16,7 +16,7 @@ spec:
   chart:
     spec:
       chart: harbor
-      version: 1.18.0
+      version: 1.17.0
       sourceRef:
         kind: HelmRepository
         name: harbor
@@ -25,11 +25,12 @@ spec:
     externalURL: https://harbor.theedgeworks.ai
     imagePullPolicy: IfNotPresent
     
-    # Use ARM-based images
+    # Harbor Core Configuration
+    # Using octohelm/harbor images from GHCR which support ARM64
     core:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-core
-        tag: v2.14.0
+        tag: v2.13.0
       # OIDC configuration environment variables
       extraEnvVars:
         - name: AUTH_MODE
@@ -55,11 +56,11 @@ spec:
     portal:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-portal
-        tag: v2.14.0
+        tag: v2.13.0
     jobservice:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-jobservice
-        tag: v2.14.0
+        tag: v2.13.0
     registry:
       registry:
         image:
@@ -68,11 +69,11 @@ spec:
       controller:
         image:
           repository: ghcr.io/octohelm/harbor/harbor-registryctl
-          tag: v2.14.0
+          tag: v2.13.0
     nginx:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-nginx
-        tag: v2.14.0
+        tag: v2.13.0
 
     # External PostgreSQL configuration
     database:
@@ -108,8 +109,8 @@ spec:
           size: 10Gi
         jobservice:
           size: 1Gi
-        # trivy:  # Disabled for ARM64 compatibility
-        #   size: 5Gi
+        trivy:
+          size: 5Gi
 
     # TLS configuration
     expose:
@@ -133,37 +134,32 @@ spec:
     # Additional OIDC setup can be done via the harbor-oidc-init.yaml job
 
     # Trivy vulnerability scanner configuration
-    # IMPORTANT: The official goharbor/trivy-adapter-photon only supports AMD64 architecture
-    # For ARM64 deployments (like Raspberry Pi), Trivy must be disabled as there is no
-    # official ARM64-compatible Trivy adapter image available
-    # 
-    # Alternative: You can run Trivy scans externally using:
-    # docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasecurity/trivy image <image-name>
+    # Using octohelm/trivy-adapter-photon from GHCR which supports ARM64
     trivy:
-      enabled: false
-      # Uncomment and configure below if running on AMD64 architecture
-      # enabled: true
-      # image:
-      #   repository: goharbor/trivy-adapter-photon
-      #   tag: v2.14.0
-      # resources:
-      #   requests:
-      #     cpu: 200m
-      #     memory: 512Mi
-      #   limits:
-      #     cpu: 1
-      #     memory: 1Gi
-      # vulnType: "os,library"
-      # severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-      # ignoreUnfixed: false
-      # securityCheck: "vuln"
-      # timeout: 5m0s
-      # dbRepository:
-      #   - "mirror.gcr.io/aquasec/trivy-db"
-      #   - "ghcr.io/aquasecurity/trivy-db"
-      # javaDBRepository:
-      #   - "mirror.gcr.io/aquasec/trivy-java-db"
-      #   - "ghcr.io/aquasecurity/trivy-java-db"
+      enabled: true
+      image:
+        repository: ghcr.io/octohelm/trivy-adapter-photon
+        tag: v2.13.0
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 1
+          memory: 1Gi
+      # Configure Trivy to scan for vulnerabilities
+      vulnType: "os,library"
+      severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+      ignoreUnfixed: false
+      securityCheck: "vuln"
+      timeout: 5m0s
+      # Use mirror repositories for better reliability
+      dbRepository:
+        - "mirror.gcr.io/aquasec/trivy-db"
+        - "ghcr.io/aquasecurity/trivy-db"
+      javaDBRepository:
+        - "mirror.gcr.io/aquasec/trivy-java-db"
+        - "ghcr.io/aquasecurity/trivy-java-db"
 
     # Disable components we don't need
     chartmuseum:
@@ -172,7 +168,7 @@ spec:
       enabled: false
 
     # Cosign Configuration
-    # Harbor 2.14.0 supports Cosign for container image signing and verification
+    # Harbor 2.13.0 supports Cosign for container image signing and verification
     # Cosign is enabled by default and configured at the project level
     # 
     # To enable Cosign for a project:
