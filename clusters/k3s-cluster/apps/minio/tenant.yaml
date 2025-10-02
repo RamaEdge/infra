@@ -34,8 +34,82 @@ spec:
         secretKeyRef:
           name: minio-credentials
           key: password
+    
+    # Google Workspace OIDC Configuration
+    - name: MINIO_IDENTITY_OPENID_CONFIG_URL
+      value: "https://accounts.google.com/.well-known/openid_configuration"
+    - name: MINIO_IDENTITY_OPENID_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: minio-google-workspace-oidc
+          key: client-id
+    - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: minio-google-workspace-oidc
+          key: client-secret
+    - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
+      value: "email"
+    - name: MINIO_IDENTITY_OPENID_CLAIM_USERINFO
+      value: "on"
+    - name: MINIO_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC
+      value: "on"
+    - name: MINIO_IDENTITY_OPENID_SCOPES
+      value: "openid,profile,email"
+    - name: MINIO_IDENTITY_OPENID_CLAIM_PREFIX
+      value: "google"
   exposeServices:
     console: true
     minio: true
   features:
-    bucketDNS: false 
+    bucketDNS: false
+  
+  # Ingress configuration for MinIO Console
+  consoleIngress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    hosts:
+      - host: minio-console.theedgeworks.ai
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: minio-console-tls
+        hosts:
+          - minio-console.theedgeworks.ai
+  
+  # Ingress configuration for MinIO API
+  minioIngress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    hosts:
+      - host: minio.theedgeworks.ai
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: minio-tls
+        hosts:
+          - minio.theedgeworks.ai
+  
+  # Resource limits for Raspberry Pi
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  
+  # ARM64 node selector
+  nodeSelector:
+    kubernetes.io/arch: arm64
+  
+  # Tolerations for ARM64 nodes (if needed)
+  tolerations: []

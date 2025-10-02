@@ -1,0 +1,55 @@
+---
+description: GitOps deployment workflow and troubleshooting
+---
+
+# GitOps Deployment Workflow
+
+## Deployment Process
+
+1. **Repository Setup**: Code is pushed to `ramaedge/infra` GitHub repository
+2. **Flux Detection**: Flux CD detects changes in the Git repository
+3. **Resource Sync**: Flux syncs Kubernetes resources to the cluster
+4. **Helm Deployment**: HelmReleases are processed and charts deployed
+5. **Application Update**: Applications are automatically updated
+
+## Required Secrets
+
+Before deployment, ensure these secrets exist on the cluster:
+
+```bash
+# TLS Certificate for ingress
+kubectl create secret tls ramaedge-tls-secret --cert=/path/to/cert.crt --key=/path/to/key.key
+
+# MinIO credentials
+kubectl create secret generic minio-credentials --from-literal=username=admin --from-literal=password=RamaedgeMinio692#
+
+# Harbor database credentials
+kubectl create secret generic harbor-db-credentials --from-literal=username=harbor --from-literal=password=RamaedgeHarbor692#
+```
+
+## Troubleshooting Commands
+
+```bash
+# Check Flux status
+kubectl get gitrepositories,kustomizations -A
+
+# Check application deployments
+kubectl get pods -n harbor
+kubectl get pods -n minio-tenant
+
+# Check Flux logs
+kubectl logs -n flux-system deployment/helm-controller
+kubectl logs -n flux-system deployment/kustomize-controller
+
+# Describe resources for debugging
+kubectl describe kustomization flux-system -n flux-system
+kubectl describe helmrelease harbor -n flux-system
+```
+
+## Common Issues
+
+- **Authentication errors**: Ensure repository is public or configure proper authentication
+- **Path errors**: Verify directory structure matches Kustomization paths
+- **Secret references**: Ensure all referenced secrets exist on the cluster
+- **Image pull errors**: Check image repositories and tags
+- **Resource conflicts**: Verify no manual resources conflict with GitOps-managed ones

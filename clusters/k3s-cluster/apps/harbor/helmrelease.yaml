@@ -103,10 +103,27 @@ spec:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
 
+    # Google Workspace OIDC Configuration
+    oidc:
+      name: "Google Workspace"
+      endpoint: "https://accounts.google.com"
+      clientIdSecretRef:
+        name: harbor-google-workspace-oidc
+        key: client-id
+      clientSecretSecretRef:
+        name: harbor-google-workspace-oidc
+        key: client-secret
+      scope: "openid,profile,email"
+      verifyCert: true
+      autoOnboard: true
+      extraRedirectParms:
+        scope: "openid,profile,email"
+        hd: "theedgeworks.ai"
+
     # Disable components we don't need
     chartmuseum:
       enabled: false
     trivy:
       enabled: false
     notary:
-      enabled: false 
+      enabled: false

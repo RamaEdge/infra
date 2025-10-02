@@ -1,0 +1,163 @@
+---
+description: Google Workspace OIDC authentication configuration for MinIO and Harbor
+---
+
+# Google Workspace OIDC Authentication
+
+## Overview
+
+Both MinIO and Harbor are configured with Google Workspace OIDC authentication, allowing users to authenticate using their Google Workspace accounts.
+
+## Configuration Files
+
+### MinIO Configuration
+- **File**: [clusters/k3s-cluster/apps/minio/tenant.yaml](mdc:clusters/k3s-cluster/apps/minio/tenant.yaml)
+- **OIDC Environment Variables**: Configured in the `env` section
+- **Secret Reference**: `minio-google-workspace-oidc`
+
+### Harbor Configuration
+- **File**: [clusters/k3s-cluster/apps/harbor/helmrelease.yaml](mdc:clusters/k3s-cluster/apps/harbor/helmrelease.yaml)
+- **OIDC Configuration**: Configured in the `oidc` section
+- **Secret Reference**: `harbor-google-workspace-oidc`
+
+## Required Secrets
+
+### MinIO Google Workspace OIDC Secret
+```bash
+kubectl create secret generic minio-google-workspace-oidc \
+  --from-literal=client-id="YOUR_GOOGLE_CLIENT_ID" \
+  --from-literal=client-secret="YOUR_GOOGLE_CLIENT_SECRET" \
+  -n minio-tenant
+```
+
+### Harbor Google Workspace OIDC Secret
+```bash
+kubectl create secret generic harbor-google-workspace-oidc \
+  --from-literal=client-id="YOUR_GOOGLE_CLIENT_ID" \
+  --from-literal=client-secret="YOUR_GOOGLE_CLIENT_SECRET" \
+  -n harbor
+```
+
+## Google Workspace Setup
+
+### OAuth 2.0 Client Configuration
+- **Application Type**: Web application
+- **Authorized Redirect URIs**:
+  - MinIO: `https://minio-console.theedgeworks.ai/oauth_callback`
+  - Harbor: `https://harbor.theedgeworks.ai/c/oidc/callback`
+- **Authorized JavaScript Origins**:
+  - `https://minio-console.theedgeworks.ai`
+  - `https://harbor.theedgeworks.ai`
+
+### OAuth Consent Screen
+- **App Name**: "MinIO & Harbor Authentication"
+- **Scopes**: `openid`, `profile`, `email`
+- **User Type**: External (for public access) or Internal (for Google Workspace)
+
+## OIDC Configuration Details
+
+### MinIO OIDC Environment Variables
+- **Config URL**: `https://accounts.google.com/.well-known/openid_configuration`
+- **Claim Name**: `email`
+- **Scopes**: `openid,profile,email`
+- **Claim Prefix**: `google`
+- **Dynamic Redirect**: Enabled
+- **Secret References**: Uses `secretKeyRef` for client ID and secret
+
+### Harbor OIDC Configuration
+- **Name**: "Google Workspace"
+- **Endpoint**: `https://accounts.google.com`
+- **Scopes**: `openid,profile,email`
+- **Auto Onboard**: Enabled
+- **Domain Restriction**: Configured via `hd` parameter
+- **Secret References**: Uses `clientIdSecretRef` and `clientSecretSecretRef`
+
+## Access Points
+
+### MinIO Console
+- **URL**: `https://minio-console.theedgeworks.ai`
+- **Authentication**: Google Workspace OIDC
+- **Fallback**: Root user credentials (for admin access)
+
+### Harbor
+- **URL**: `https://harbor.theedgeworks.ai`
+- **Authentication**: Google Workspace OIDC
+- **Auto Onboard**: Users are automatically created on first login
+
+## Security Features
+
+### Domain Restriction
+- **MinIO**: Configured via environment variables
+- **Harbor**: Configured via `hd` parameter in `extraRedirectParms`
+- **Effect**: Only users from the specified Google Workspace domain can authenticate
+
+### TLS Security
+- **HTTPS Only**: All OIDC flows use HTTPS
+- **Certificate Validation**: Enabled for Google's OIDC endpoints
+- **Secure Redirects**: All redirect URIs use HTTPS
+
+### Secret Management
+- **MinIO**: Uses `secretKeyRef` in environment variables
+- **Harbor**: Uses `clientIdSecretRef` and `clientSecretSecretRef`
+- **Security**: No hardcoded credentials in configuration files
+
+## Troubleshooting
+
+### Common Issues
+1. **Invalid Redirect URI**: Verify URIs in Google Cloud Console
+2. **Access Denied**: Check OAuth consent screen configuration
+3. **Client ID Not Found**: Verify Kubernetes secrets are correct
+
+### Debug Commands
+```bash
+# Check MinIO pods and logs
+kubectl get pods -n minio-tenant
+kubectl logs -n minio-tenant deployment/minio-tenant
+
+# Check Harbor pods and logs
+kubectl get pods -n harbor
+kubectl logs -n harbor deployment/harbor-core
+
+# Verify secrets
+kubectl get secrets -n minio-tenant | grep google
+kubectl get secrets -n harbor | grep google
+```
+
+## Setup Documentation
+
+Complete setup instructions are available in [GOOGLE_OIDC_SETUP.md](mdc:GOOGLE_OIDC_SETUP.md).
+
+## Fallback Authentication
+
+Both services maintain fallback authentication:
+- **MinIO**: Root user credentials via `minio-credentials` secret
+- **Harbor**: Database authentication for local users
+
+This ensures access is maintained even if OIDC is temporarily unavailable.
+
+## Configuration Examples
+
+### MinIO Secret Reference
+```yaml
+- name: MINIO_IDENTITY_OPENID_CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: minio-google-workspace-oidc
+      key: client-id
+- name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: minio-google-workspace-oidc
+      key: client-secret
+```
+
+### Harbor Secret Reference
+```yaml
+oidc:
+  clientIdSecretRef:
+    name: harbor-google-workspace-oidc
+    key: client-id
+  clientSecretSecretRef:
+    name: harbor-google-workspace-oidc
+    key: client-secret
+```

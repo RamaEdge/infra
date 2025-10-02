@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: minio-operator
@@ -25,11 +25,19 @@ spec:
       repository: quay.io/minio/operator
       tag: v4.3.7
       pullPolicy: IfNotPresent
-    replicaCount: 1  
+    replicaCount: 1
+    
+    # ARM64 node selector
+    nodeSelector:
+      kubernetes.io/arch: arm64
+    
+    # Tolerations for ARM64 nodes (if needed)
+    tolerations: []
+    
     resources:
       requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
         memory: "256Mi"
         cpu: "200m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"

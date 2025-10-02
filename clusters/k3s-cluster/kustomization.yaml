@@ -5,4 +5,4 @@ resources:
   - flux-system
   - apps/harbor
   - apps/minio
-  - apps/minio-operator 
+  - apps/minio-operator

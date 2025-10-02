@@ -1,0 +1,132 @@
+---
+description: MinIO object storage configuration and deployment
+---
+
+# MinIO Object Storage Configuration
+
+## MinIO Application Structure
+
+Located in [clusters/k3s-cluster/apps/minio/](mdc:clusters/k3s-cluster/apps/minio/):
+
+- **`kustomization.yaml`**: MinIO application Kustomization
+- **`namespace.yaml`**: MinIO namespace definition
+- **`tenant.yaml`**: MinIO tenant configuration
+
+## MinIO Operator Structure
+
+Located in [clusters/k3s-cluster/apps/minio-operator/](mdc:clusters/k3s-cluster/apps/minio-operator/):
+
+- **`kustomization.yaml`**: MinIO operator Kustomization
+- **`namespace.yaml`**: MinIO operator namespace
+- **`operator-helmrelease.yaml`**: MinIO operator HelmRelease
+
+## Key Configuration Points
+
+### ARM64 Compatibility
+- **MinIO Image**: `quay.io/minio/minio:RELEASE.2024-05-10T01-41-38Z.arm64` (ARM64 specific)
+- **MinIO Operator**: `quay.io/minio/operator:v4.3.7` (Multi-architecture, ARM64 compatible)
+- **Node Selectors**: Both operator and tenant configured for ARM64 nodes
+- **Architecture**: Optimized for Raspberry Pi ARM64 clusters
+
+### Storage Configuration
+- **Persistent Storage**: 300Gi allocated per volume (2 volumes per server, 2 servers = 1.2TB total)
+- **Storage Class**: `local-path` (k3s default)
+- **Access Mode**: ReadWriteOnce
+- **Replication**: 2 servers with 2 volumes each for high availability
+
+### Ingress Configuration
+- **MinIO Console**: `https://minio-console.theedgeworks.ai` (Web UI)
+- **MinIO API**: `https://minio.theedgeworks.ai` (S3 API)
+- **TLS**: Enabled with separate certificates for console and API
+- **Ingress Class**: `traefik`
+- **Entry Points**: `websecure`
+
+### Authentication Configuration
+- **Google Workspace OIDC**: Primary authentication method
+- **Root User**: Fallback authentication via `minio-credentials` secret
+- **OIDC Secret**: `minio-google-workspace-oidc` for Google OIDC credentials
+- **Domain Restriction**: Configured to restrict access to Google Workspace domain
+
+### Credentials Management
+- **MinIO Credentials**: Stored in Kubernetes secret `minio-credentials`
+- **Google OIDC Credentials**: Stored in Kubernetes secret `minio-google-workspace-oidc`
+- **Username**: Referenced from secret key `username`
+- **Password**: Referenced from secret key `password`
+- **Secret Location**: Must be created in `minio-tenant` namespace
+
+### Resource Limits
+- **MinIO Operator**: 128Mi memory request, 256Mi limit, 100m CPU request, 200m limit
+- **MinIO Tenant**: 256Mi memory request, 512Mi limit, 250m CPU request, 500m limit
+- **Optimized**: For Raspberry Pi cluster constraints
+
+## Required Secrets
+
+Before deployment, create these secrets:
+
+```bash
+# MinIO credentials (fallback authentication)
+kubectl create secret generic minio-credentials \
+  --from-literal=username=admin \
+  --from-literal=password=RamaedgeMinio692# \
+  -n minio-tenant
+
+# Google Workspace OIDC credentials
+kubectl create secret generic minio-google-workspace-oidc \
+  --from-literal=client-id="YOUR_GOOGLE_CLIENT_ID" \
+  --from-literal=client-secret="YOUR_GOOGLE_CLIENT_SECRET" \
+  -n minio-tenant
+
+# MinIO Console TLS certificate
+kubectl create secret tls minio-console-tls \
+  --cert=/path/to/minio-console.crt \
+  --key=/path/to/minio-console.key \
+  -n minio-tenant
+
+# MinIO API TLS certificate
+kubectl create secret tls minio-tls \
+  --cert=/path/to/minio.crt \
+  --key=/path/to/minio.key \
+  -n minio-tenant
+```
+
+## Deployment Architecture
+
+- **MinIO Operator**: Manages tenant lifecycle and provides CRDs
+- **MinIO Tenant**: Actual MinIO deployment with 2 servers, 2 volumes each
+- **High Availability**: Distributed across multiple volumes for redundancy
+- **Console Access**: Web-based management interface with Google OIDC
+- **API Access**: S3-compatible API for applications
+
+## Authentication Flow
+
+1. **Primary**: Google Workspace OIDC authentication
+2. **Fallback**: Root user credentials for admin access
+3. **Domain Restriction**: Only users from configured Google Workspace domain
+4. **Auto Onboard**: Users are automatically onboarded on first OIDC login
+
+## Troubleshooting
+
+```bash
+# Check operator status
+kubectl get pods -n minio-operator
+
+# Check tenant status
+kubectl get pods -n minio-tenant
+
+# Check tenant details
+kubectl describe tenant minio-tenant -n minio-tenant
+
+# Check services
+kubectl get svc -n minio-tenant
+
+# Check ingress
+kubectl get ingress -n minio-tenant
+
+# Check OIDC configuration
+kubectl logs -n minio-tenant deployment/minio-tenant | grep -i oidc
+```
+
+## Related Documentation
+
+- **Google OIDC Setup**: See [google-oidc-auth.mdc](mdc:.cursor/rules/google-oidc-auth.mdc)
+- **Complete Setup Guide**: See [GOOGLE_OIDC_SETUP.md](mdc:GOOGLE_OIDC_SETUP.md)
