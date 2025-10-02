@@ -1,0 +1,84 @@
+---
+description: HashiCorp Vault configuration and deployment
+---
+
+# HashiCorp Vault Configuration
+
+## Vault Application Structure
+
+Located in [clusters/k3s-cluster/apps/vault/](mdc:clusters/k3s-cluster/apps/vault/):
+
+- **`helmrelease.yaml`**: Main Vault HelmRelease configuration
+- **`helmrepository.yaml`**: HashiCorp Helm chart repository
+- **`kustomization.yaml`**: Vault application Kustomization
+- **`namespace.yaml`**: Vault namespace definition
+
+## Key Configuration Points
+
+### ARM64 Compatibility
+- **Vault Image**: `cgr.dev/chainguard/vault:1.16.1` (multi-architecture, ARM64 compatible)
+- **Vault K8s Injector**: `cgr.dev/chainguard/vault-k8s:1.1.0` (multi-architecture, ARM64 compatible)
+- **Architecture**: Optimized for Raspberry Pi ARM64 clusters
+
+### Storage Configuration
+- **Persistent Storage**: 10Gi allocated for Vault data
+- **Storage Backend**: File-based storage at `/vault/data`
+- **Audit Logging**: Enabled with file-based audit logs
+
+### Security Configuration
+- **TLS**: Enabled with certificate-based authentication
+- **Security Context**: Runs as non-root user (UID 100, GID 1000)
+- **Network Security**: TLS 1.2 minimum version required
+- **API Address**: `https://vault.theedgeworks.ai`
+
+### Ingress Configuration
+- **External URL**: `https://vault.theedgeworks.ai`
+- **TLS**: Enabled with secret `vault-tls`
+- **Ingress Class**: `traefik`
+- **Entry Points**: `websecure`
+- **Middleware**: Strip prefix middleware for proper routing
+
+### Resource Limits
+- **Memory**: 256Mi request, 512Mi limit
+- **CPU**: 250m request, 500m limit
+- **Injector Resources**: 128Mi memory request, 256Mi limit
+
+### Health Checks
+- **Readiness Probe**: `/v1/sys/health` endpoint
+- **Liveness Probe**: Same endpoint with longer intervals
+- **Initial Delay**: 5s for readiness, 30s for liveness
+
+## Required Secrets
+
+Before deployment, create the TLS secret:
+
+```bash
+kubectl create secret tls vault-tls --cert=/path/to/vault.crt --key=/path/to/vault.key -n vault
+```
+
+## Initial Setup
+
+After deployment, initialize Vault:
+
+```bash
+# Port forward to access Vault
+kubectl port-forward -n vault svc/vault 8200:8200
+
+# Initialize Vault (this will generate unseal keys and root token)
+vault operator init
+
+# Unseal Vault using the generated keys
+vault operator unseal <unseal-key-1>
+vault operator unseal <unseal-key-2>
+vault operator unseal <unseal-key-3>
+
+# Login with root token
+vault auth <root-token>
+```
+
+## Features Enabled
+
+- **UI**: Web interface enabled
+- **Injector**: Kubernetes secret injection enabled
+- **Audit Logging**: File-based audit logs
+- **High Availability**: Single node configuration (suitable for Raspberry Pi)

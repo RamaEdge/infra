@@ -1,0 +1,33 @@
+---
+globs: *.yaml,*.yml
+---
+
+# Kubernetes Manifest Guidelines
+
+## File Organization
+
+- **HelmRelease files**: Use `helmrelease.yaml` for Flux HelmRelease resources
+- **Kustomization files**: Use `kustomization.yaml` for Kustomize configurations
+- **Namespace files**: Use `namespace.yaml` for Kubernetes namespace definitions
+- **HelmRepository files**: Use `helmrepository.yaml` for Flux HelmRepository resources
+
+## Naming Conventions
+
+- Application directories should match the service name (e.g., `harbor/`, `minio/`)
+- HelmRelease resources should be named after the application
+- Namespaces should match the application name
+- Use kebab-case for all resource names
+
+## Resource Structure
+
+- Each application should have its own directory under `apps/`
+- Include a `kustomization.yaml` that lists all resources for the application
+- Use external dependencies (PostgreSQL, Redis) when possible for production workloads
+- Always specify resource limits and requests for production deployments
+
+## Security Best Practices
+
+- Never include secrets directly in YAML files
+- Reference secrets using `secretKeyRef` or `passwordSecretRef`
+- Use TLS for all external communications
+- Enable RBAC and network policies where applicable

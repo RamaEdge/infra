@@ -1,0 +1,43 @@
+---
+globs: *flux*,*helmrelease*,*helmrepository*
+---
+
+# Flux CD GitOps Configuration
+
+## Flux System Configuration
+
+The Flux system is configured in [clusters/k3s-cluster/flux-system/](mdc:clusters/k3s-cluster/flux-system/) directory:
+
+- **`gotk-sync.yaml`**: Flux GitOps Toolkit synchronization configuration
+- **`kustomization.yaml`**: Flux system Kustomization
+- **HelmRepository files**: Define external Helm chart repositories
+
+## HelmRelease Best Practices
+
+- Use semantic versioning for chart versions (e.g., `1.17.0`)
+- Set appropriate sync intervals (5m for production, 1m for development)
+- Include remediation retry policies for failed deployments
+- Use `targetNamespace` to deploy to specific namespaces
+- Set `createNamespace: false` when namespace is managed separately
+
+## HelmRepository Configuration
+
+- Reference official Helm repositories when possible
+- Use HTTPS URLs for external repositories
+- Include version constraints in HelmRelease specs
+- Organize repositories by provider (e.g., `harbor-helmrepository.yaml`)
+
+## Kustomization Structure
+
+- Root kustomization in [clusters/k3s-cluster/kustomization.yaml](mdc:clusters/k3s-cluster/kustomization.yaml) includes:
+  - `flux-system` (Flux configuration)
+  - `apps/harbor` (Harbor deployment)
+  - `apps/minio` (MinIO deployment)
+  - `apps/minio-operator` (MinIO operator)
+
+## Deployment Flow
+
+1. Changes pushed to Git repository
+2. Flux detects changes and syncs resources
+3. HelmReleases are processed and charts deployed
+4. Applications are updated automatically

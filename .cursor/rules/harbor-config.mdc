@@ -1,0 +1,138 @@
+---
+description: Harbor container registry configuration and deployment
+---
+
+# Harbor Container Registry Configuration
+
+## Harbor Application Structure
+
+Located in [clusters/k3s-cluster/apps/harbor/](mdc:clusters/k3s-cluster/apps/harbor/):
+
+- **`helmrelease.yaml`**: Main Harbor HelmRelease configuration
+- **`helmrepository.yaml`**: Harbor Helm chart repository
+- **`kustomization.yaml`**: Harbor application Kustomization
+- **`namespace.yaml`**: Harbor namespace definition
+- **`postgres.yaml`**: External PostgreSQL deployment
+- **`redis.yaml`**: External Redis deployment
+
+## Key Configuration Points
+
+### External Dependencies
+- **PostgreSQL**: External database at `postgres-service.harbor.svc.cluster.local:5432`
+- **Redis**: External cache at `redis-service.harbor.svc.cluster.local:6379`
+- **Credentials**: Referenced via Kubernetes secrets (`harbor-db-credentials`, `harbor-redis-credentials`)
+
+### ARM-based Images
+Harbor uses ARM-compatible images from `ghcr.io/octohelm/harbor/`:
+- `harbor-core:v2.13.0`
+- `harbor-portal:v2.13.0`
+- `harbor-jobservice:v2.13.0`
+- `harbor-registryctl:v2.13.0`
+- `harbor-nginx:v2.13.0`
+
+### Ingress Configuration
+- **External URL**: `https://harbor.theedgeworks.ai`
+- **TLS**: Enabled with secret `harbor-tls`
+- **Ingress Class**: `traefik`
+- **Entry Points**: `websecure`
+
+### Authentication Configuration
+- **Google Workspace OIDC**: Primary authentication method
+- **Database Authentication**: Fallback for local users
+- **OIDC Secret**: `harbor-google-workspace-oidc` for Google OIDC credentials
+- **Auto Onboard**: Users are automatically created on first OIDC login
+- **Domain Restriction**: Configured to restrict access to Google Workspace domain
+
+### Disabled Components
+- ChartMuseum (disabled)
+- Trivy vulnerability scanner (disabled)
+- Notary signing service (disabled)
+
+### Persistence
+- Registry storage: 10Gi
+- JobService storage: 1Gi
+
+## Required Secrets
+
+Before deployment, create these secrets:
+
+```bash
+# Harbor database credentials
+kubectl create secret generic harbor-db-credentials \
+  --from-literal=username=harbor \
+  --from-literal=password=RamaedgeHarbor692# \
+  -n harbor
+
+# Harbor Redis credentials
+kubectl create secret generic harbor-redis-credentials \
+  --from-literal=password=RamaedgeHarbor692# \
+  -n harbor
+
+# Google Workspace OIDC credentials
+kubectl create secret generic harbor-google-workspace-oidc \
+  --from-literal=client-id="YOUR_GOOGLE_CLIENT_ID" \
+  --from-literal=client-secret="YOUR_GOOGLE_CLIENT_SECRET" \
+  -n harbor
+
+# Harbor TLS certificate
+kubectl create secret tls harbor-tls \
+  --cert=/path/to/harbor.crt \
+  --key=/path/to/harbor.key \
+  -n harbor
+```
+
+## OIDC Configuration
+
+Harbor is configured with Google Workspace OIDC authentication:
+
+```yaml
+oidc:
+  name: "Google Workspace"
+  endpoint: "https://accounts.google.com"
+  clientId: "your-google-workspace-client-id"
+  clientSecret: "your-google-workspace-client-secret"
+  scope: "openid,profile,email"
+  verifyCert: true
+  autoOnboard: true
+  extraRedirectParms:
+    scope: "openid,profile,email"
+    hd: "your-domain.com"  # Replace with your actual Google Workspace domain
+```
+
+## Authentication Flow
+
+1. **Primary**: Google Workspace OIDC authentication
+2. **Fallback**: Database authentication for local users
+3. **Domain Restriction**: Only users from configured Google Workspace domain
+4. **Auto Onboard**: Users are automatically created on first OIDC login
+
+## Access Points
+
+- **Web UI**: `https://harbor.theedgeworks.ai`
+- **Docker Registry**: `harbor.theedgeworks.ai`
+- **Authentication**: Google Workspace OIDC with fallback to database
+
+## Troubleshooting
+
+```bash
+# Check Harbor pods
+kubectl get pods -n harbor
+
+# Check Harbor services
+kubectl get svc -n harbor
+
+# Check Harbor ingress
+kubectl get ingress -n harbor
+
+# Check Harbor logs
+kubectl logs -n harbor deployment/harbor-core
+kubectl logs -n harbor deployment/harbor-portal
+
+# Check OIDC configuration
+kubectl logs -n harbor deployment/harbor-core | grep -i oidc
+```
+
+## Related Documentation
+
+- **Google OIDC Setup**: See [google-oidc-auth.mdc](mdc:.cursor/rules/google-oidc-auth.mdc)
+- **Complete Setup Guide**: See [GOOGLE_OIDC_SETUP.md](mdc:GOOGLE_OIDC_SETUP.md)
