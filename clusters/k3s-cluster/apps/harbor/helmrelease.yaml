@@ -16,7 +16,7 @@ spec:
   chart:
     spec:
       chart: harbor
-      version: 1.17.0
+      version: 1.18.0
       sourceRef:
         kind: HelmRepository
         name: harbor
@@ -29,15 +29,37 @@ spec:
     core:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-core
-        tag: v2.13.0
+        tag: v2.14.0
+      # OIDC configuration environment variables
+      extraEnvVars:
+        - name: AUTH_MODE
+          value: "oidc_auth"
+        - name: OIDC_NAME
+          value: "Google Workspace"
+        - name: OIDC_ENDPOINT
+          value: "https://accounts.google.com"
+        - name: OIDC_SCOPE
+          value: "openid,profile,email"
+        - name: OIDC_VERIFY_CERT
+          value: "true"
+        - name: OIDC_AUTO_ONBOARD
+          value: "true"
+        - name: OIDC_EXTRA_REDIRECT_PARMS
+          value: "scope=openid,profile,email&hd=theedgeworks.ai"
+      extraEnvVarsFrom:
+        - secretRef:
+            name: harbor-google-workspace-oidc
+            keys:
+              - client-id: OIDC_CLIENT_ID
+              - client-secret: OIDC_CLIENT_SECRET
     portal:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-portal
-        tag: v2.13.0
+        tag: v2.14.0
     jobservice:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-jobservice
-        tag: v2.13.0
+        tag: v2.14.0
     registry:
       registry:
         image:
@@ -46,11 +68,11 @@ spec:
       controller:
         image:
           repository: ghcr.io/octohelm/harbor/harbor-registryctl
-          tag: v2.13.0
+          tag: v2.14.0
     nginx:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-nginx
-        tag: v2.13.0
+        tag: v2.14.0
 
     # External PostgreSQL configuration
     database:
@@ -86,6 +108,8 @@ spec:
           size: 10Gi
         jobservice:
           size: 1Gi
+        # trivy:  # Disabled for ARM64 compatibility
+        #   size: 5Gi
 
     # TLS configuration
     expose:
@@ -104,26 +128,63 @@ spec:
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
 
     # Google Workspace OIDC Configuration
-    oidc:
-      name: "Google Workspace"
-      endpoint: "https://accounts.google.com"
-      clientIdSecretRef:
-        name: harbor-google-workspace-oidc
-        key: client-id
-      clientSecretSecretRef:
-        name: harbor-google-workspace-oidc
-        key: client-secret
-      scope: "openid,profile,email"
-      verifyCert: true
-      autoOnboard: true
-      extraRedirectParms:
-        scope: "openid,profile,email"
-        hd: "theedgeworks.ai"
+    # Note: Harbor Helm chart doesn't support OIDC configuration directly
+    # OIDC configuration is added to the core section above via environment variables
+    # Additional OIDC setup can be done via the harbor-oidc-init.yaml job
+
+    # Trivy vulnerability scanner configuration
+    # IMPORTANT: The official goharbor/trivy-adapter-photon only supports AMD64 architecture
+    # For ARM64 deployments (like Raspberry Pi), Trivy must be disabled as there is no
+    # official ARM64-compatible Trivy adapter image available
+    # 
+    # Alternative: You can run Trivy scans externally using:
+    # docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasecurity/trivy image <image-name>
+    trivy:
+      enabled: false
+      # Uncomment and configure below if running on AMD64 architecture
+      # enabled: true
+      # image:
+      #   repository: goharbor/trivy-adapter-photon
+      #   tag: v2.14.0
+      # resources:
+      #   requests:
+      #     cpu: 200m
+      #     memory: 512Mi
+      #   limits:
+      #     cpu: 1
+      #     memory: 1Gi
+      # vulnType: "os,library"
+      # severity: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+      # ignoreUnfixed: false
+      # securityCheck: "vuln"
+      # timeout: 5m0s
+      # dbRepository:
+      #   - "mirror.gcr.io/aquasec/trivy-db"
+      #   - "ghcr.io/aquasecurity/trivy-db"
+      # javaDBRepository:
+      #   - "mirror.gcr.io/aquasec/trivy-java-db"
+      #   - "ghcr.io/aquasecurity/trivy-java-db"
 
     # Disable components we don't need
     chartmuseum:
       enabled: false
-    trivy:
-      enabled: false
     notary:
       enabled: false
+
+    # Cosign Configuration
+    # Harbor 2.14.0 supports Cosign for container image signing and verification
+    # Cosign is enabled by default and configured at the project level
+    # 
+    # To enable Cosign for a project:
+    # 1. Log in to Harbor web interface
+    # 2. Navigate to your project
+    # 3. Go to Configuration > Deployment Security
+    # 4. Enable "Cosign" option
+    #
+    # To sign images with Cosign:
+    # 1. Install Cosign CLI: https://github.com/sigstore/cosign
+    # 2. Generate key pair: cosign generate-key-pair
+    # 3. Sign image: cosign sign --key cosign.key harbor.theedgeworks.ai/project/image:tag
+    # 4. Verify signature: cosign verify --key cosign.pub harbor.theedgeworks.ai/project/image:tag
+    #
+    # Note: Cosign signatures are stored as OCI artifacts alongside the main image
