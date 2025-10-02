@@ -22,7 +22,7 @@ spec:
         name: harbor
         namespace: flux-system
   values:
-    externalURL: https://harbor.ramaedge.local
+    externalURL: https://harbor.theedgeworks.ai
     imagePullPolicy: IfNotPresent
     
     # Use ARM-based images
@@ -97,7 +97,7 @@ spec:
           secretName: harbor-tls
       ingress:
         hosts:
-          core: harbor.ramaedge.local
+          core: harbor.theedgeworks.ai
         className: traefik
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
