@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: harbor-oidc-config
+  namespace: harbor
+  labels:
+    app.kubernetes.io/name: harbor-oidc-config
+    app.kubernetes.io/component: configuration
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: harbor-oidc-config
+        image: curlimages/curl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          
+          # Wait for Harbor to be ready
+          echo "Waiting for Harbor to be ready..."
+          until curl -k -s https://harbor.theedgeworks.ai/api/v2.0/systeminfo > /dev/null; do
+            echo "Harbor not ready yet, waiting..."
+            sleep 10
+          done
+          
+          echo "Harbor is ready, configuring OIDC..."
+          
+          # Get admin credentials from secret
+          ADMIN_PASSWORD=$(cat /etc/harbor/admin-password)
+          
+          # Get OIDC credentials from secret
+          CLIENT_ID=$(cat /etc/harbor/oidc/client-id)
+          CLIENT_SECRET=$(cat /etc/harbor/oidc/client-secret)
+          
+          # Configure OIDC authentication
+          curl -k -X PUT \
+            -H "Content-Type: application/json" \
+            -u "admin:${ADMIN_PASSWORD}" \
+            -d '{
+              "auth_mode": "oidc_auth",
+              "oidc_name": "Google Workspace",
+              "oidc_endpoint": "https://accounts.google.com",
+              "oidc_client_id": "'${CLIENT_ID}'",
+              "oidc_client_secret": "'${CLIENT_SECRET}'",
+              "oidc_scope": "openid,profile,email",
+              "oidc_verify_cert": true,
+              "oidc_auto_onboard": true,
+              "oidc_extra_redirect_parms": "scope=openid,profile,email&hd=theedgeworks.ai"
+            }' \
+            https://harbor.theedgeworks.ai/api/v2.0/configurations
+          
+          echo "OIDC configuration completed successfully!"
+        volumeMounts:
+        - name: admin-password
+          mountPath: /etc/harbor/admin-password
+          subPath: password
+          readOnly: true
+        - name: oidc-credentials
+          mountPath: /etc/harbor/oidc
+          readOnly: true
+      volumes:
+      - name: admin-password
+        secret:
+          secretName: harbor-harbor-core
+      - name: oidc-credentials
+        secret:
+          secretName: harbor-google-workspace-oidc
