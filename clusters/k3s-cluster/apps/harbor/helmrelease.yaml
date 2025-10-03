@@ -141,11 +141,11 @@ spec:
     # Additional OIDC setup can be done via the harbor-oidc-init.yaml job
 
     # Trivy vulnerability scanner configuration
-    # Using octohelm/trivy-adapter-photon from GHCR which supports ARM64
+    # Using octohelm/harbor/trivy-adapter-photon from GHCR which supports ARM64
     trivy:
       enabled: true
       image:
-        repository: ghcr.io/octohelm/trivy-adapter-photon
+        repository: ghcr.io/octohelm/harbor/trivy-adapter-photon
         tag: v2.13.0
       resources:
         requests:
