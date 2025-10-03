@@ -46,7 +46,7 @@ spec:
         - name: OIDC_AUTO_ONBOARD
           value: "true"
         - name: OIDC_EXTRA_REDIRECT_PARMS
-          value: "scope=openid,profile,email&hd=theedgeworks.ai"
+          value: '{"scope":"openid,profile,email","hd":"theedgeworks.ai"}'
       extraEnvVarsFrom:
         - secretRef:
             name: harbor-google-workspace-oidc
@@ -66,6 +66,13 @@ spec:
         image:
           repository: registry
           tag: 2.8.2
+        # Fix registry command to use correct config file
+        command: ["registry", "serve", "/etc/registry/config.yml"]
+        # Ensure proper security context for storage access
+        securityContext:
+          runAsUser: 10000
+          runAsGroup: 10000
+          fsGroup: 10000
       controller:
         image:
           repository: ghcr.io/octohelm/harbor/harbor-registryctl
