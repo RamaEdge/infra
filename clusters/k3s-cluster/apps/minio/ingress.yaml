@@ -1,0 +1,55 @@
+---
+# Ingress for MinIO Console
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-console-ingress
+  namespace: minio-tenant
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  ingressClassName: traefik
+  tls:
+    - secretName: minio-console-tls
+      hosts:
+        - minio-console.theedgeworks.ai
+  rules:
+    - host: minio-console.theedgeworks.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio-tenant-console
+                port:
+                  number: 9090
+---
+# Ingress for MinIO API
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-api-ingress
+  namespace: minio-tenant
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  ingressClassName: traefik
+  tls:
+    - secretName: minio-tls
+      hosts:
+        - minio.theedgeworks.ai
+  rules:
+    - host: minio.theedgeworks.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: minio-tenant
+                port:
+                  number: 9000
+
