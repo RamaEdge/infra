@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - tenant.yaml
+  - ingress.yaml
 
 namespace: minio-tenant
 
