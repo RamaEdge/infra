@@ -4,3 +4,5 @@ kind: Kustomization
 resources:
   - flux-system
   - apps/harbor
+  - apps/minio-operator
+  - apps/minio
