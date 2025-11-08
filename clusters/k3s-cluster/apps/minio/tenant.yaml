@@ -10,6 +10,19 @@ spec:
     - name: pool-0
       servers: 2
       volumesPerServer: 2
+      # ARM64 node selector (at pool level)
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      # Tolerations for ARM64 nodes (if needed)
+      tolerations: []
+      # Resource limits for Raspberry Pi (at pool level)
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "250m"
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
       volumeClaimTemplate:
         metadata:
           name: data
@@ -63,19 +76,3 @@ spec:
     minio: true
   features:
     bucketDNS: false
-  
-  # Resource limits for Raspberry Pi
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "250m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-  
-  # ARM64 node selector
-  nodeSelector:
-    kubernetes.io/arch: arm64
-  
-  # Tolerations for ARM64 nodes (if needed)
-  tolerations: []
