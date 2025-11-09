@@ -24,7 +24,7 @@ spec:
   values:
     image:
       repository: quay.io/minio/operator
-      tag: v4.3.7
+      tag: v5.0.18-arm64
       pullPolicy: IfNotPresent
     replicaCount: 1
     
