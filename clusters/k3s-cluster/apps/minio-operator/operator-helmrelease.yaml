@@ -22,24 +22,27 @@ spec:
     remediation:
       retries: 3
   values:
-    image:
-      repository: quay.io/minio/operator
-      tag: v5.0.18-arm64
-      pullPolicy: IfNotPresent
-    replicaCount: 1
-    
-    # ARM64 node selector
-    nodeSelector:
-      kubernetes.io/arch: arm64
-    
-    # Tolerations for ARM64 nodes (if needed)
-    tolerations: []
-    
-    resources:
+    operator:
+      image:
+        repository: quay.io/minio/operator
+        tag: v5.0.18-arm64
+        pullPolicy: IfNotPresent
+      resources:
       requests:
         memory: "128Mi"
         cpu: "100m"
       limits:
         memory: "256Mi"
         cpu: "200m"
+
+    console:
+      image:
+        repository: quay.io/minio/console
+        tag: v5.0.18-arm64
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+          limits:
     tenants : []    

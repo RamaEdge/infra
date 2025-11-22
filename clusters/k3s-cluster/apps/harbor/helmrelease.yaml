@@ -61,6 +61,12 @@ spec:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-jobservice
         tag: v2.13.0
+      # Ensure proper security context for storage access
+      securityContext:
+        runAsUser: 10000
+        runAsGroup: 10000
+        fsGroup: 10000
+        fsGroupChangePolicy: OnRootMismatch
     registry:
       registry:
         image:
@@ -73,6 +79,7 @@ spec:
           runAsUser: 10000
           runAsGroup: 10000
           fsGroup: 10000
+          fsGroupChangePolicy: OnRootMismatch
       controller:
         image:
           repository: ghcr.io/octohelm/harbor/harbor-registryctl
@@ -114,10 +121,16 @@ spec:
       persistentVolumeClaim:
         registry:
           size: 10Gi
+          accessMode: ReadWriteOnce
+          # Registry runs as UID 10000, fsGroup in pod securityContext handles permissions
         jobservice:
           size: 1Gi
+          accessMode: ReadWriteOnce
+          # JobService runs as UID 10000, fsGroup in pod securityContext handles permissions
         trivy:
           size: 5Gi
+          accessMode: ReadWriteOnce
+          # Trivy runs as root (UID 0) by default, but fsGroup ensures proper permissions
 
     # TLS configuration
     expose:
