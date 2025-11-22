@@ -72,8 +72,8 @@ spec:
         image:
           repository: registry
           tag: 2.8.2
-        # Fix registry command to use correct config file
-        command: ["registry", "serve", "/etc/registry/config.yml"]
+        # Note: Command override not supported by Harbor Helm chart
+        # Using Kustomize patch to set command: ["registry", "serve", "/etc/registry/config.yml"]
         # Ensure proper security context for storage access
         securityContext:
           runAsUser: 10000
@@ -126,7 +126,7 @@ spec:
       enabled: true
       persistentVolumeClaim:
         registry:
-          size: 10Gi
+          size: 200Gi
           accessMode: ReadWriteOnce
           # Mount path set to /var/lib/registry to match registry image default volume
           # This resolves permission issues when registry tries to write to /var/lib/registry/docker
@@ -139,6 +139,10 @@ spec:
         trivy:
           size: 5Gi
           accessMode: ReadWriteOnce
+      imageChartStorage:
+        type: filesystem
+        filesystem:
+          rootdirectory: /storage
           # Trivy runs as root (UID 0) by default, but fsGroup ensures proper permissions
 
     # TLS configuration
