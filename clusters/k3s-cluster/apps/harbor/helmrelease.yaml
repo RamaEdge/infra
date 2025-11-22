@@ -30,7 +30,7 @@ spec:
     core:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-core
-        tag: v2.13.0
+        tag: v2.13.2
       # OIDC configuration environment variables
       extraEnvVars:
         - name: AUTH_MODE
@@ -56,11 +56,11 @@ spec:
     portal:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-portal
-        tag: v2.13.0
+        tag: v2.13.2
     jobservice:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-jobservice
-        tag: v2.13.0
+        tag: v2.13.2
       # Ensure proper security context for storage access
       securityContext:
         runAsUser: 10000
@@ -70,8 +70,8 @@ spec:
     registry:
       registry:
         image:
-          repository: registry
-          tag: 2.8.2
+          repository: ghcr.io/octohelm/harbor/harbor-registry-base
+          tag: v2.13.2
         # Note: Command override not supported by Harbor Helm chart
         # Using Kustomize patch to set command: ["registry", "serve", "/etc/registry/config.yml"]
         # Ensure proper security context for storage access
@@ -89,11 +89,11 @@ spec:
       controller:
         image:
           repository: ghcr.io/octohelm/harbor/harbor-registryctl
-          tag: v2.13.0
+          tag: v2.13.2
     nginx:
       image:
-        repository: ghcr.io/octohelm/harbor/harbor-nginx
-        tag: v2.13.0
+        repository: ghcr.io/octohelm/harbor/nginx-photon
+        tag: v2.13.2
 
     # External PostgreSQL configuration
     database:
@@ -172,7 +172,7 @@ spec:
       enabled: true
       image:
         repository: ghcr.io/octohelm/harbor/trivy-adapter-photon
-        tag: v2.13.0
+        tag: v2.13.2
       resources:
         requests:
           cpu: 200m
