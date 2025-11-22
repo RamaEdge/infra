@@ -128,6 +128,7 @@ spec:
         registry:
           size: 200Gi
           accessMode: ReadWriteOnce
+          storageClass: longhorn
           # Mount path set to /var/lib/registry to match registry image default volume
           # This resolves permission issues when registry tries to write to /var/lib/registry/docker
           mountPath: /var/lib/registry
@@ -135,10 +136,12 @@ spec:
         jobservice:
           size: 1Gi
           accessMode: ReadWriteOnce
+          storageClass: longhorn
           # JobService runs as UID 10000, fsGroup in pod securityContext handles permissions
         trivy:
           size: 5Gi
           accessMode: ReadWriteOnce
+          storageClass: longhorn
       imageChartStorage:
         type: filesystem
         filesystem:
