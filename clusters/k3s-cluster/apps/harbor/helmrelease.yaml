@@ -80,6 +80,12 @@ spec:
           runAsGroup: 10000
           fsGroup: 10000
           fsGroupChangePolicy: OnRootMismatch
+        # Override registry config to use /var/lib/registry as storage path
+        # This matches the default registry image volume path
+        config:
+          storage:
+            filesystem:
+              rootdirectory: /var/lib/registry
       controller:
         image:
           repository: ghcr.io/octohelm/harbor/harbor-registryctl
@@ -122,6 +128,9 @@ spec:
         registry:
           size: 10Gi
           accessMode: ReadWriteOnce
+          # Mount path set to /var/lib/registry to match registry image default volume
+          # This resolves permission issues when registry tries to write to /var/lib/registry/docker
+          mountPath: /var/lib/registry
           # Registry runs as UID 10000, fsGroup in pod securityContext handles permissions
         jobservice:
           size: 1Gi
