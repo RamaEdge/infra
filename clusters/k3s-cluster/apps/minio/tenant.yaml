@@ -32,7 +32,7 @@ spec:
           resources:
             requests:
               storage: 300Gi
-          storageClassName: local-path
+          storageClassName: longhorn
   mountPath: /export
   podManagementPolicy: Parallel
   requestAutoCert: false
