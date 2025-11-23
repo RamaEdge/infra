@@ -56,6 +56,21 @@ spec:
       # Ensure admin password is set or use default (prom-operator)
       adminPassword: "prom-operator"
 
+      # Load OAuth credentials from secret
+      envFromSecrets:
+        - name: grafana-google-oidc
+
+      grafana.ini:
+        server:
+          domain: monitor.theedgeworks.ai
+          root_url: https://monitor.theedgeworks.ai
+          enable_gzip: true
+        auth.google:
+          enabled: true
+          allow_sign_up: true
+          allowed_domains: theedgeworks.ai
+          scopes: https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
+
       ingress:
         enabled: true
         ingressClassName: traefik
