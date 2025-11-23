@@ -6,3 +6,4 @@ resources:
   - minio-helmrepository.yaml
   - harbor-helmrepository.yaml
   - prometheus-community-helmrepository.yaml
+  - minio-tenant-ks.yaml

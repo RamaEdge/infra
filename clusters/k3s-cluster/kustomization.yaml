@@ -6,4 +6,3 @@ resources:
   - apps/harbor
   - apps/kube-prometheus-stack
   - apps/minio-operator
-  - apps/minio
