@@ -4,7 +4,7 @@ metadata:
   name: minio-tenant
   namespace: minio-tenant
 spec:
-  image: quay.io/minio/minio:RELEASE.2024-11-07T00-52-20Z
+  image: quay.io/minio/minio:RELEASE.2025-04-08T15-41-24Z
   imagePullPolicy: IfNotPresent
   pools:
     - name: pool-0
