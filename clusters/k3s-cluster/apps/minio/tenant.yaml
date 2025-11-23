@@ -7,22 +7,15 @@ spec:
   image: quay.io/minio/minio:RELEASE.2025-04-08T15-41-24Z
   imagePullPolicy: IfNotPresent
   pools:
-    - name: pool-0
-      servers: 2
+    - servers: 2
+      name: pool-0
       volumesPerServer: 2
       # ARM64 node selector (at pool level)
       nodeSelector:
         kubernetes.io/arch: arm64
       # Tolerations for ARM64 nodes (if needed)
       tolerations: []
-      # Resource limits for Raspberry Pi (at pool level)
-      resources:
-        requests:
-          memory: "256Mi"
-          cpu: "250m"
-        limits:
-          memory: "512Mi"
-          cpu: "500m"
+      size: 300Gi
       volumeClaimTemplate:
         metadata:
           name: data
@@ -36,21 +29,14 @@ spec:
   mountPath: /export
   podManagementPolicy: Parallel
   requestAutoCert: false
+  configuration:
+    name: storage-configuration
   env:
     - name: MINIO_SERVER_URL
       value: "https://minio.theedgeworks.ai"
     - name: MINIO_BROWSER_REDIRECT_URL
       value: "https://minio-console.theedgeworks.ai"
-    - name: MINIO_ROOT_USER
-      valueFrom:
-        secretKeyRef:
-          name: minio-credentials
-          key: username
-    - name: MINIO_ROOT_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: minio-credentials
-          key: password
+    # MINIO_ROOT_USER and MINIO_ROOT_PASSWORD are now provided via storage-configuration secret config.env
 
     # Google Workspace OIDC Configuration
     - name: MINIO_IDENTITY_OPENID_CONFIG_URL
