@@ -7,3 +7,4 @@ resources:
   - harbor-helmrepository.yaml
   - prometheus-community-helmrepository.yaml
   - minio-tenant-ks.yaml
+  - metallb-helmrepository.yaml
