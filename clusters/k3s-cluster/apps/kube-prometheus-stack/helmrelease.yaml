@@ -65,6 +65,10 @@ spec:
           domain: monitor.theedgeworks.ai
           root_url: https://monitor.theedgeworks.ai
           enable_gzip: true
+        auth:
+          disable_login_form: true
+        auth.basic:
+          enabled: false
         auth.google:
           enabled: true
           allow_sign_up: true
