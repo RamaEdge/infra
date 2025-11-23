@@ -1,0 +1,84 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: "66.x"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    # Storage Configuration for Longhorn
+    prometheus:
+      prometheusSpec:
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: longhorn
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 10Gi
+        # Retention configuration
+        retention: 10d
+
+    alertmanager:
+      alertmanagerSpec:
+        storage:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: longhorn
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                requests:
+                  storage: 2Gi
+
+    grafana:
+      persistence:
+        enabled: true
+        storageClassName: longhorn
+        accessModes: ["ReadWriteOnce"]
+        size: 2Gi
+      # Ensure admin password is set or use default (prom-operator)
+      adminPassword: "prom-operator"
+
+      ingress:
+        enabled: true
+        ingressClassName: traefik
+        annotations:
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+          traefik.ingress.kubernetes.io/router.tls: "true"
+        hosts:
+          - monitor.theedgeworks.ai
+        path: /
+        tls:
+          - secretName: monitor-tls
+            hosts:
+              - monitor.theedgeworks.ai
+
+    # ARM64 Compatibility
+    # Most default images in this chart are multi-arch.
+    # If specific components fail, we may need to override images here.
+
+    # Resource limits can be tuned for RPi
+    prometheusOperator:
+      resources:
+        limits:
+          memory: 200Mi
+        requests:
+          cpu: 100m
+          memory: 100Mi
