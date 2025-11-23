@@ -38,7 +38,7 @@ metadata:
 spec:
   ingressClassName: traefik
   tls:
-    - secretName: minio-tls
+    - secretName: minio-console-tls
       hosts:
         - storage.theedgeworks.ai
   rules:
