@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: operator
-      version: 6.0.4
+      version: 7.1.1
       sourceRef:
         kind: HelmRepository
         name: minio
@@ -27,7 +27,7 @@ spec:
     operator:
       image:
         repository: quay.io/minio/operator
-        tag: v6.0.4
+        tag: v7.1.1
         pullPolicy: IfNotPresent
       resources:
       requests:
@@ -40,11 +40,13 @@ spec:
     console:
       image:
         repository: quay.io/minio/console
-        tag: v6.0.4
+        tag: v7.1.1
         pullPolicy: IfNotPresent
       resources:
         requests:
           memory: "128Mi"
           cpu: "100m"
-          limits:
+        limits:
+          memory: "256Mi"
+          cpu: "200m"
     tenants: []
