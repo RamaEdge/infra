@@ -35,31 +35,6 @@ spec:
       value: "https://storage.theedgeworks.ai"
     - name: MINIO_BROWSER_REDIRECT_URL
       value: "https://storage-console.theedgeworks.ai"
-    # MINIO_ROOT_USER and MINIO_ROOT_PASSWORD are now provided via storage-configuration secret config.env
-
-    # Google Workspace OIDC Configuration
-    - name: MINIO_IDENTITY_OPENID_CONFIG_URL
-      value: "https://accounts.google.com/.well-known/openid-configuration"
-    - name: MINIO_IDENTITY_OPENID_CLIENT_ID
-      valueFrom:
-        secretKeyRef:
-          name: minio-google-workspace-oidc
-          key: client-id
-    - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: minio-google-workspace-oidc
-          key: client-secret
-    - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
-      value: "email"
-    - name: MINIO_IDENTITY_OPENID_CLAIM_USERINFO
-      value: "on"
-    - name: MINIO_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC
-      value: "on"
-    - name: MINIO_IDENTITY_OPENID_SCOPES
-      value: "openid,profile,email"
-    - name: MINIO_IDENTITY_OPENID_CLAIM_PREFIX
-      value: "google"
   exposeServices:
     console: true
     minio: true
