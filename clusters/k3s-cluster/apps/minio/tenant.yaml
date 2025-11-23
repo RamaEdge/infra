@@ -39,7 +39,7 @@ spec:
 
     # Google Workspace OIDC Configuration
     - name: MINIO_IDENTITY_OPENID_CONFIG_URL
-      value: "https://accounts.google.com/.well-known/openid_configuration"
+      value: "https://accounts.google.com/.well-known/openid-configuration"
     - name: MINIO_IDENTITY_OPENID_CLIENT_ID
       valueFrom:
         secretKeyRef:
