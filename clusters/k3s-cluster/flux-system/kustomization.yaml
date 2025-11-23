@@ -8,3 +8,4 @@ resources:
   - prometheus-community-helmrepository.yaml
   - minio-tenant-ks.yaml
   - metallb-helmrepository.yaml
+  - metallb-config-ks.yaml
