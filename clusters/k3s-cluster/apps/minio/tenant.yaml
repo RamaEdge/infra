@@ -15,7 +15,6 @@ spec:
         kubernetes.io/arch: arm64
       # Tolerations for ARM64 nodes (if needed)
       tolerations: []
-      size: 300Gi
       volumeClaimTemplate:
         metadata:
           name: data
@@ -33,9 +32,9 @@ spec:
     name: storage-configuration
   env:
     - name: MINIO_SERVER_URL
-      value: "https://minio.theedgeworks.ai"
+      value: "https://storage.theedgeworks.ai"
     - name: MINIO_BROWSER_REDIRECT_URL
-      value: "https://minio-console.theedgeworks.ai"
+      value: "https://storage-console.theedgeworks.ai"
     # MINIO_ROOT_USER and MINIO_ROOT_PASSWORD are now provided via storage-configuration secret config.env
 
     # Google Workspace OIDC Configuration

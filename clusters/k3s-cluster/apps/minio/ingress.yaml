@@ -13,9 +13,9 @@ spec:
   tls:
     - secretName: minio-console-tls
       hosts:
-        - minio-console.theedgeworks.ai
+        - storage-console.theedgeworks.ai
   rules:
-    - host: minio-console.theedgeworks.ai
+    - host: storage-console.theedgeworks.ai
       http:
         paths:
           - path: /
@@ -40,9 +40,9 @@ spec:
   tls:
     - secretName: minio-tls
       hosts:
-        - minio.theedgeworks.ai
+        - storage.theedgeworks.ai
   rules:
-    - host: minio.theedgeworks.ai
+    - host: storage.theedgeworks.ai
       http:
         paths:
           - path: /
