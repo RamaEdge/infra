@@ -8,7 +8,7 @@ spec:
   targetNamespace: minio-operator
   chart:
     spec:
-      chart: minio-operator
+      chart: operator
       version: 6.0.4
       sourceRef:
         kind: HelmRepository
