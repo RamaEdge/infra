@@ -10,3 +10,4 @@ resources:
   - metallb-helmrepository.yaml
   - metallb-config-ks.yaml
   - bitnami-helmrepository.yaml
+  - codecentric-helmrepository.yaml
