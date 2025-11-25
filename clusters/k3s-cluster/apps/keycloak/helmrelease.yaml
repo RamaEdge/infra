@@ -26,3 +26,5 @@ spec:
       enabled: true
       auth:
         postgresPassword: "ChangeMeDB123!"
+    image:
+      tag: latest
