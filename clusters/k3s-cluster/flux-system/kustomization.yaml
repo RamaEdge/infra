@@ -9,3 +9,4 @@ resources:
   - minio-tenant-ks.yaml
   - metallb-helmrepository.yaml
   - metallb-config-ks.yaml
+  - bitnami-helmrepository.yaml
