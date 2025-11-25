@@ -7,11 +7,11 @@ spec:
   interval: 1h0m0s
   chart:
     spec:
-      chart: keycloak
-      version: 24.3.1
+      chart: keycloakx
+      version: 7.1.5
       sourceRef:
         kind: HelmRepository
-        name: bitnami
+        name: codecentric
         namespace: flux-system
   values:
     auth:
@@ -26,5 +26,3 @@ spec:
       enabled: true
       auth:
         postgresPassword: "ChangeMeDB123!"
-    image:
-      tag: latest
