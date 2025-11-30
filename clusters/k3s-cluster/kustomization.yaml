@@ -7,3 +7,4 @@ resources:
   - apps/kube-prometheus-stack
   - apps/minio-operator
   - apps/metallb
+  - apps/keycloak
