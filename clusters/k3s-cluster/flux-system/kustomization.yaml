@@ -11,3 +11,4 @@ resources:
   - metallb-config-ks.yaml
   - bitnami-helmrepository.yaml
   - codecentric-helmrepository.yaml
+  - longhorn-helmrepository.yaml
