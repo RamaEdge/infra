@@ -36,17 +36,6 @@ spec:
         # Retention configuration
         retention: 10d
 
-    alertmanager:
-      alertmanagerSpec:
-        storage:
-          volumeClaimTemplate:
-            spec:
-              storageClassName: longhorn
-              accessModes: ["ReadWriteOnce"]
-              resources:
-                requests:
-                  storage: 2Gi
-
     grafana:
       persistence:
         enabled: true
