@@ -6,9 +6,7 @@ resources:
   - minio-helmrepository.yaml
   - harbor-helmrepository.yaml
   - prometheus-community-helmrepository.yaml
-  - minio-tenant-ks.yaml
   - metallb-helmrepository.yaml
-  - metallb-config-ks.yaml
   - bitnami-helmrepository.yaml
   - codecentric-helmrepository.yaml
   - longhorn-helmrepository.yaml
