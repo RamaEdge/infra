@@ -103,21 +103,12 @@ spec:
             memory: 512Mi
             cpu: 500m
 
-    # Internal Redis configuration (harbor-redis)
-    # Using octohelm/harbor image for ARM64 support
+    # External Redis configuration
+    # Using standalone Redis deployment (redis.yaml) for ARM64 compatibility
     redis:
-      type: internal
-      internal:
-        image:
-          repository: ghcr.io/octohelm/harbor/redis-photon
-          tag: v2.14.0
-        resources:
-          requests:
-            memory: 64Mi
-            cpu: 25m
-          limits:
-            memory: 128Mi
-            cpu: 100m
+      type: external
+      external:
+        addr: redis-service.harbor.svc.cluster.local:6379
 
     # Persistence configuration
     persistence:
@@ -140,10 +131,6 @@ spec:
           accessMode: ReadWriteOnce
           storageClass: longhorn
         database:
-          size: 1Gi
-          accessMode: ReadWriteOnce
-          storageClass: longhorn
-        redis:
           size: 1Gi
           accessMode: ReadWriteOnce
           storageClass: longhorn
