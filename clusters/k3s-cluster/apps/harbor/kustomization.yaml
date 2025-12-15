@@ -3,7 +3,4 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - postgres.yaml
-  - redis.yaml
   - helmrelease.yaml
-  # Note: helmrepository.yaml is managed in flux-system/kustomization.yaml to avoid duplicates 

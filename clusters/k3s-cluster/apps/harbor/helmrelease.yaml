@@ -16,7 +16,7 @@ spec:
   chart:
     spec:
       chart: harbor
-      version: 1.17.2
+      version: 1.18.1
       sourceRef:
         kind: HelmRepository
         name: harbor
@@ -30,37 +30,33 @@ spec:
     core:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-core
-        tag: v2.13.2
-      # OIDC configuration environment variables
-      extraEnvVars:
-        - name: AUTH_MODE
-          value: "oidc_auth"
-        - name: OIDC_NAME
-          value: "Google Workspace"
-        - name: OIDC_ENDPOINT
-          value: "https://accounts.google.com"
-        - name: OIDC_SCOPE
-          value: "openid,profile,email"
-        - name: OIDC_VERIFY_CERT
-          value: "true"
-        - name: OIDC_AUTO_ONBOARD
-          value: "true"
-        - name: OIDC_EXTRA_REDIRECT_PARMS
-          value: '{"scope":"openid,profile,email","hd":"theedgeworks.ai"}'
-      extraEnvVarsFrom:
-        - secretRef:
-            name: harbor-google-workspace-oidc
-            keys:
-              - client-id: OIDC_CLIENT_ID
-              - client-secret: OIDC_CLIENT_SECRET
+        tag: v2.14.0
+      # Note: OIDC configuration must be done via Harbor UI or API after deployment
+      # Harbor stores OIDC settings in its database, not from environment variables
+      # 
+      # To configure Google Workspace OIDC:
+      # 1. Log into Harbor as admin
+      # 2. Go to Administration > Configuration > Authentication
+      # 3. Set Auth Mode to "OIDC"
+      # 4. Configure:
+      #    - OIDC Provider Name: Google Workspace
+      #    - OIDC Endpoint: https://accounts.google.com
+      #    - OIDC Client ID: (from Google Cloud Console)
+      #    - OIDC Client Secret: (from Google Cloud Console)
+      #    - OIDC Scope: openid,profile,email
+      #    - Verify Certificate: checked
+      #    - Automatic onboarding: checked
+      #    - Extra Redirect Parameters: {"hd":"theedgeworks.ai"}
+      #
+      # Alternatively, use the harbor-oidc-config Job (see harbor-oidc-config.yaml)
     portal:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-portal
-        tag: v2.13.2
+        tag: v2.14.0
     jobservice:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-jobservice
-        tag: v2.13.2
+        tag: v2.14.0
       # Ensure proper security context for storage access
       securityContext:
         runAsUser: 10000
@@ -71,7 +67,7 @@ spec:
       registry:
         image:
           repository: ghcr.io/octohelm/harbor/registry-photon
-          tag: v2.13.2
+          tag: v2.14.0
         # Note: Command override not supported by Harbor Helm chart
         # Using Kustomize patch to set command: ["registry", "serve", "/etc/registry/config.yml"]
         # Ensure proper security context for storage access
@@ -85,37 +81,43 @@ spec:
       controller:
         image:
           repository: ghcr.io/octohelm/harbor/harbor-registryctl
-          tag: v2.13.2
+          tag: v2.14.0
     nginx:
       image:
         repository: ghcr.io/octohelm/harbor/nginx-photon
-        tag: v2.13.2
+        tag: v2.14.0
 
-    # External PostgreSQL configuration
+    # Internal PostgreSQL configuration (harbor-db)
+    # Using octohelm/harbor image for ARM64 support
     database:
-      type: external
-      external:
-        host: postgres-service.harbor.svc.cluster.local
-        port: 5432
-        username: admin
-        passwordSecretRef:
-          name: harbor-db-credentials
-          key: password
-        coreDatabase: harbor
-        sslmode: disable
-
-    # External Redis configuration
-    redis:
-      type: external
-      external:
-        addr: redis-service.harbor.svc.cluster.local:6379
-        passwordSecretRef:
-          name: harbor-redis-credentials
-          key: password
+      type: internal
       internal:
-        enabled: false
-      harborRedis:
-        enabled: false
+        image:
+          repository: ghcr.io/octohelm/harbor/harbor-db
+          tag: v2.14.0
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 100m
+          limits:
+            memory: 512Mi
+            cpu: 500m
+
+    # Internal Redis configuration (harbor-redis)
+    # Using octohelm/harbor image for ARM64 support
+    redis:
+      type: internal
+      internal:
+        image:
+          repository: ghcr.io/octohelm/harbor/harbor-redis-base
+          tag: v2.14.0
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 25m
+          limits:
+            memory: 128Mi
+            cpu: 100m
 
     # Persistence configuration
     persistence:
@@ -135,6 +137,14 @@ spec:
           # JobService runs as UID 10000, fsGroup in pod securityContext handles permissions
         trivy:
           size: 5Gi
+          accessMode: ReadWriteOnce
+          storageClass: longhorn
+        database:
+          size: 1Gi
+          accessMode: ReadWriteOnce
+          storageClass: longhorn
+        redis:
+          size: 1Gi
           accessMode: ReadWriteOnce
           storageClass: longhorn
       imageChartStorage:
@@ -170,7 +180,7 @@ spec:
       enabled: true
       image:
         repository: ghcr.io/octohelm/harbor/trivy-adapter-photon
-        tag: v2.13.2
+        tag: v2.14.0
       resources:
         requests:
           cpu: 200m
