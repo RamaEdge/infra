@@ -109,7 +109,7 @@ spec:
       type: internal
       internal:
         image:
-          repository: ghcr.io/octohelm/harbor/harbor-redis-base
+          repository: ghcr.io/octohelm/harbor/redis-photon
           tag: v2.14.0
         resources:
           requests:
