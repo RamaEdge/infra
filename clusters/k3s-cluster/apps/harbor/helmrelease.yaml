@@ -155,7 +155,7 @@ spec:
         annotations:
           traefik.ingress.kubernetes.io/router.tls: "true"
           traefik.ingress.kubernetes.io/router.entrypoints: websecure
-
+          traefik.ingress.kubernetes.io/router.middlewares: harbor-timeouts@kubernetescrd
     # Google Workspace OIDC Configuration
     # Note: Harbor Helm chart doesn't support OIDC configuration directly
     # OIDC configuration is added to the core section above via environment variables
