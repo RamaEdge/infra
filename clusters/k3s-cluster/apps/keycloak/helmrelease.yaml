@@ -2,9 +2,20 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: keycloak
-  namespace: keycloak
+  namespace: flux-system
 spec:
-  interval: 1h0m0s
+  interval: 5m
+  targetNamespace: keycloak
+  dependsOn:
+    - name: keycloak-db
+      namespace: flux-system
+  install:
+    createNamespace: false
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
   chart:
     spec:
       chart: keycloakx
@@ -14,46 +25,69 @@ spec:
         name: codecentric
         namespace: flux-system
   values:
+    # Keycloak startup command
     command:
       - "/opt/keycloak/bin/kc.sh"
-      - "--verbose"
       - "start"
+      - "--http-enabled=true"
       - "--http-port=8080"
       - "--hostname-strict=false"
-      - "--spi-events-listener-jboss-logging-success-level=info"
-      - "--spi-events-listener-jboss-logging-error-level=warn"
+      - "--hostname-strict-https=false"
 
+    # Environment variables from secrets
     extraEnv: |
       - name: KEYCLOAK_ADMIN
         valueFrom:
           secretKeyRef:
-            name: {{ include "keycloak.fullname" . }}-admin-creds
-            key: user
+            name: keycloak-admin-credentials
+            key: username
       - name: KEYCLOAK_ADMIN_PASSWORD
         valueFrom:
           secretKeyRef:
-            name: {{ include "keycloak.fullname" . }}-admin-creds
+            name: keycloak-admin-credentials
             key: password
       - name: JAVA_OPTS_APPEND
-        value: >-
-          -XX:MaxRAMPercentage=50.0
-          -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+        value: "-XX:MaxRAMPercentage=50.0"
 
+    # Database connection checker
     dbchecker:
       enabled: true
 
+    # PostgreSQL database configuration
     database:
       vendor: postgres
       hostname: keycloak-db-postgresql
       port: 5432
-      username: dbusername
-      password: dbpassword
+      username: keycloak
       database: keycloak
+      existingSecret: keycloak-db-credentials
+      existingSecretKey: password
 
-    secrets:
-      admin-creds:
-        annotations:
-          my-test-annotation: Test secret for {{ include "keycloak.fullname" . }}
-        stringData:
-          user: admin
-          password: secret
+    # Ingress configuration
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      rules:
+        - host: keycloak.theedgeworks.ai
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: keycloak-tls
+          hosts:
+            - keycloak.theedgeworks.ai
+
+    # Resource limits
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
+
+    # Health checks
+    health:
+      enabled: true

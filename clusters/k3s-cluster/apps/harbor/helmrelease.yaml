@@ -153,10 +153,16 @@ spec:
           core: harbor.theedgeworks.ai
         className: nginx
         annotations:
+          # SSL and proxy settings
           nginx.ingress.kubernetes.io/ssl-redirect: "true"
           nginx.ingress.kubernetes.io/proxy-body-size: "0"
+          # Timeout settings for large image uploads (10 minutes)
+          nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
           nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
           nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+          # Chunked transfer encoding support
+          nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+          nginx.ingress.kubernetes.io/proxy-buffering: "off"
     # Google Workspace OIDC Configuration
     # Note: Harbor Helm chart doesn't support OIDC configuration directly
     # OIDC configuration is added to the core section above via environment variables

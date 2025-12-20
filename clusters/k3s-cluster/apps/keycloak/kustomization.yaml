@@ -5,3 +5,4 @@ resources:
   - namespace.yaml
   - postgres-helmrelease.yaml
   - helmrelease.yaml
+# Note: postgres.yaml is unused - using Bitnami PostgreSQL HelmRelease instead
