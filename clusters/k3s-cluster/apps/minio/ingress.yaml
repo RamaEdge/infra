@@ -6,10 +6,10 @@ metadata:
   name: minio-console-ingress
   namespace: minio-tenant
   annotations:
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
-  ingressClassName: traefik
+  ingressClassName: nginx
   tls:
     - secretName: minio-console-tls
       hosts:
@@ -33,10 +33,10 @@ metadata:
   name: minio-api-ingress
   namespace: minio-tenant
   annotations:
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
-  ingressClassName: traefik
+  ingressClassName: nginx
   tls:
     - secretName: minio-console-tls
       hosts:
@@ -52,4 +52,3 @@ spec:
                 name: minio
                 port:
                   number: 80
-

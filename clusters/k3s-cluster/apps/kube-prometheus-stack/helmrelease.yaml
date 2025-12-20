@@ -66,10 +66,9 @@ spec:
 
       ingress:
         enabled: true
-        ingressClassName: traefik
+        ingressClassName: nginx
         annotations:
-          traefik.ingress.kubernetes.io/router.entrypoints: websecure
-          traefik.ingress.kubernetes.io/router.tls: "true"
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
         hosts:
           - monitor.theedgeworks.ai
         path: /
