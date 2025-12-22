@@ -18,3 +18,4 @@ resources:
   - dashboard-longhorn.yaml
   - dashboard-metallb.yaml
   - prometheusrule-metallb.yaml
+  - servicemonitor-metallb.yaml
