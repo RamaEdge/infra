@@ -6,3 +6,4 @@ resources:
   - harbor-helmrepository.yaml
   - prometheus-community-helmrepository.yaml
   - bitnami-helmrepository.yaml
+  - codecentric-helmrepository.yaml

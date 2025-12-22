@@ -35,6 +35,13 @@ spec:
                   storage: 10Gi
         # Retention configuration
         retention: 10d
+        # Scrape ServiceMonitors from all namespaces
+        serviceMonitorSelectorNilUsesHelmValues: false
+        podMonitorSelectorNilUsesHelmValues: false
+        ruleSelectorNilUsesHelmValues: false
+        serviceMonitorNamespaceSelector: {}
+        podMonitorNamespaceSelector: {}
+        ruleNamespaceSelector: {}
 
     grafana:
       persistence:
