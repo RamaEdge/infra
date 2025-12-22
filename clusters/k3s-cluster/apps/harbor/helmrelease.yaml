@@ -89,7 +89,6 @@ spec:
       external:
         addr: redis-service.harbor.svc.cluster.local:6379
     exporter:
-      enabled: true
       image:
         repository: ghcr.io/octohelm/harbor/harbor-exporter
         tag: v2.14.0
