@@ -4,5 +4,4 @@ kind: Kustomization
 resources:
   - flux-system
   - apps/harbor
-  - apps/keycloak
   - apps/kube-prometheus-stack
