@@ -12,3 +12,7 @@ resources:
   - servicemonitor-harbor.yaml
   - servicemonitor-nginx-ingress.yaml
   - servicemonitor-longhorn.yaml
+  # Grafana Dashboards
+  - dashboard-harbor.yaml
+  - dashboard-nginx-ingress.yaml
+  - dashboard-longhorn.yaml
