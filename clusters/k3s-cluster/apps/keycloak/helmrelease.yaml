@@ -46,7 +46,7 @@ spec:
             name: keycloak-admin-credentials
             key: password
       - name: JAVA_OPTS_APPEND
-        value: "-XX:MaxRAMPercentage=50.0"
+        value: "-XX:MaxRAMPercentage=70.0 -XX:+ExitOnOutOfMemoryError -Djava.awt.headless=true -Djgroups.dns.query=keycloak-keycloak-keycloakx-headless.keycloak.svc.cluster.local"
 
     # Database connection checker
     dbchecker:
@@ -85,14 +85,14 @@ spec:
         metallb.universe.tf/loadBalancerIP: "192.168.0.110"
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
       rules:
-        - host: keycloak.theedgeworks.ai
+        - host: auth.theedgeworks.ai
           paths:
             - path: /
               pathType: Prefix
       tls:
         - secretName: keycloak-tls
           hosts:
-            - keycloak.theedgeworks.ai
+            - auth.theedgeworks.ai
 
     # Resource limits
     resources:
