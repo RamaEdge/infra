@@ -52,11 +52,26 @@ spec:
     # Database connection checker
     dbchecker:
       enabled: true
+      image:
+        repository: docker.io/busybox
+        tag: "1.32"
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+      resources:
+        requests:
+          cpu: 20m
+          memory: 32Mi
+        limits:
+          cpu: 20m
+          memory: 32Mi
 
     # PostgreSQL database configuration
     database:
       vendor: postgres
-      hostname: keycloak-keycloak-db-postgresql
+      hostname: keycloak-postgresql
       port: 5432
       username: keycloak
       database: keycloak

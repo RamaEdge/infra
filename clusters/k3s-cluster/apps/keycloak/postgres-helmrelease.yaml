@@ -22,6 +22,8 @@ spec:
         name: bitnami
         namespace: flux-system
   values:
+    # Set explicit name to have predictable service name
+    fullnameOverride: keycloak-postgresql
     global:
       postgresql:
         auth:
