@@ -17,3 +17,4 @@ resources:
   - dashboard-nginx-ingress.yaml
   - dashboard-longhorn.yaml
   - dashboard-metallb.yaml
+  - prometheusrule-metallb.yaml

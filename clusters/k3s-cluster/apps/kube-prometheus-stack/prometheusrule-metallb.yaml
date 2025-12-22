@@ -1,0 +1,65 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: metallb-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: metallb
+      rules:
+        - alert: MetalLBConfigNotLoaded
+          expr: metallb_config_loaded == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MetalLB configuration not loaded"
+            description: "MetalLB configuration has not been loaded for more than 5 minutes."
+
+        - alert: MetalLBAddressPoolExhausted
+          expr: metallb_allocator_addresses_total - metallb_allocator_addresses_in_use_total == 0
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MetalLB address pool exhausted"
+            description: "MetalLB address pool {{ $labels.pool }} has no available addresses."
+
+        - alert: MetalLBAddressPoolLow
+          expr: (metallb_allocator_addresses_in_use_total / metallb_allocator_addresses_total) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MetalLB address pool running low"
+            description: "MetalLB address pool {{ $labels.pool }} is more than 80% utilized."
+
+        - alert: MetalLBSpeakerDown
+          expr: up{job="metallb-speaker"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MetalLB speaker is down"
+            description: "MetalLB speaker on {{ $labels.instance }} has been down for more than 2 minutes."
+
+        - alert: MetalLBControllerDown
+          expr: up{job="metallb-controller"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MetalLB controller is down"
+            description: "MetalLB controller has been down for more than 2 minutes."
+
+        - alert: MetalLBBGPSessionDown
+          expr: metallb_bgp_session_up == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "MetalLB BGP session is down"
+            description: "MetalLB BGP session to {{ $labels.peer }} is down."
+
