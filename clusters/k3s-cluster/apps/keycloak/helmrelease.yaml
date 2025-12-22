@@ -31,7 +31,8 @@ spec:
       - "start"
       - "--http-enabled=true"
       - "--http-port=8080"
-      - "--hostname-strict=false"
+      - "--hostname=https://auth.theedgeworks.ai"
+      - "--proxy-headers=xforwarded"
 
     # Environment variables from secrets
     extraEnv: |
