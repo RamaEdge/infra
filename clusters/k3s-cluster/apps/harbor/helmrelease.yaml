@@ -31,24 +31,7 @@ spec:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-core
         tag: v2.14.0
-      # Note: OIDC configuration must be done via Harbor UI or API after deployment
-      # Harbor stores OIDC settings in its database, not from environment variables
-      # 
-      # To configure Google Workspace OIDC:
-      # 1. Log into Harbor as admin
-      # 2. Go to Administration > Configuration > Authentication
-      # 3. Set Auth Mode to "OIDC"
-      # 4. Configure:
-      #    - OIDC Provider Name: Google Workspace
-      #    - OIDC Endpoint: https://accounts.google.com
-      #    - OIDC Client ID: (from Google Cloud Console)
-      #    - OIDC Client Secret: (from Google Cloud Console)
-      #    - OIDC Scope: openid,profile,email
-      #    - Verify Certificate: checked
-      #    - Automatic onboarding: checked
-      #    - Extra Redirect Parameters: {"hd":"theedgeworks.ai"}
-      #
-      # Alternatively, use the harbor-oidc-config Job (see harbor-oidc-config.yaml)
+
     portal:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-portal
@@ -87,8 +70,6 @@ spec:
         repository: ghcr.io/octohelm/harbor/nginx-photon
         tag: v2.14.0
 
-    # Internal PostgreSQL configuration (harbor-db)
-    # Using octohelm/harbor image for ARM64 support
     database:
       type: internal
       internal:
@@ -103,13 +84,22 @@ spec:
             memory: 512Mi
             cpu: 500m
 
-    # External Redis configuration
-    # Using standalone Redis deployment (redis.yaml) for ARM64 compatibility
     redis:
       type: external
       external:
         addr: redis-service.harbor.svc.cluster.local:6379
-
+    exporter:
+      enabled: true
+      image:
+        repository: ghcr.io/octohelm/harbor/harbor-exporter
+        tag: v2.14.0
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
     # Persistence configuration
     persistence:
       enabled: true
@@ -163,13 +153,7 @@ spec:
           # Chunked transfer encoding support
           nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
           nginx.ingress.kubernetes.io/proxy-buffering: "off"
-    # Google Workspace OIDC Configuration
-    # Note: Harbor Helm chart doesn't support OIDC configuration directly
-    # OIDC configuration is added to the core section above via environment variables
-    # Additional OIDC setup can be done via the harbor-oidc-init.yaml job
 
-    # Trivy vulnerability scanner configuration
-    # Using octohelm/harbor/trivy-adapter-photon from GHCR which supports ARM64
     trivy:
       enabled: true
       image:
@@ -223,20 +207,4 @@ spec:
       serviceMonitor:
         enabled: false  # We create our own ServiceMonitors
 
-    # Cosign Configuration
-    # Harbor 2.13.0 supports Cosign for container image signing and verification
-    # Cosign is enabled by default and configured at the project level
-    # 
-    # To enable Cosign for a project:
-    # 1. Log in to Harbor web interface
-    # 2. Navigate to your project
-    # 3. Go to Configuration > Deployment Security
-    # 4. Enable "Cosign" option
-    #
-    # To sign images with Cosign:
-    # 1. Install Cosign CLI: https://github.com/sigstore/cosign
-    # 2. Generate key pair: cosign generate-key-pair
-    # 3. Sign image: cosign sign --key cosign.key harbor.theedgeworks.ai/project/image:tag
-    # 4. Verify signature: cosign verify --key cosign.pub harbor.theedgeworks.ai/project/image:tag
-    #
-    # Note: Cosign signatures are stored as OCI artifacts alongside the main image
+
