@@ -202,6 +202,27 @@ spec:
     notary:
       enabled: false
 
+    # Enable Prometheus metrics
+    metrics:
+      enabled: true
+      core:
+        path: /metrics
+        port: 8001
+      registry:
+        path: /metrics
+        port: 8001
+      jobservice:
+        path: /metrics
+        port: 8001
+      trivy:
+        path: /metrics
+        port: 8001
+      exporter:
+        path: /metrics
+        port: 8001
+      serviceMonitor:
+        enabled: false  # We create our own ServiceMonitors
+
     # Cosign Configuration
     # Harbor 2.13.0 supports Cosign for container image signing and verification
     # Cosign is enabled by default and configured at the project level

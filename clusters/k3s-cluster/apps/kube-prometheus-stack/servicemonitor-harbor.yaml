@@ -1,0 +1,119 @@
+# Note: Harbor ServiceMonitors require metrics to be enabled in the Harbor HelmRelease.
+# Once metrics are enabled, Harbor exposes metrics on port 8001 for each component.
+# These ServiceMonitors may not work until Harbor is upgraded with metrics enabled.
+#
+# If Harbor's metrics service is not exposed, you may need to create Services
+# that expose the metrics ports, or use PodMonitors instead.
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: harbor-exporter
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - harbor
+  selector:
+    matchLabels:
+      app: harbor
+      component: exporter
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+---
+# Alternative: Use PodMonitors to scrape metrics directly from pods
+# This works even if the service doesn't expose the metrics port
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: harbor-core
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - harbor
+  selector:
+    matchLabels:
+      app: harbor
+      component: core
+  podMetricsEndpoints:
+    # Harbor Core metrics port (8001 when metrics.enabled=true)
+    - targetPort: 8001
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: harbor-registry
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - harbor
+  selector:
+    matchLabels:
+      app: harbor
+      component: registry
+  podMetricsEndpoints:
+    - targetPort: 8001
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: harbor-jobservice
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - harbor
+  selector:
+    matchLabels:
+      app: harbor
+      component: jobservice
+  podMetricsEndpoints:
+    - targetPort: 8001
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: harbor-trivy
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - harbor
+  selector:
+    matchLabels:
+      app: harbor
+      component: trivy
+  podMetricsEndpoints:
+    - targetPort: 8001
+      path: /metrics
+      interval: 60s
+      scrapeTimeout: 10s

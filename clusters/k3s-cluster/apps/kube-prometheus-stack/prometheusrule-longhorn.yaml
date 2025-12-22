@@ -1,0 +1,310 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: longhorn-alerts
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  groups:
+  # Longhorn Volume Health Alerts
+  - name: longhorn.volume.health
+    interval: 30s
+    rules:
+    # Volume degraded (not all replicas healthy)
+    - alert: LonghornVolumeDegraded
+      expr: |
+        longhorn_volume_robustness == 2
+      for: 5m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn volume is degraded"
+        description: |
+          Longhorn volume {{ $labels.volume }} is degraded.
+          Not all replicas are healthy. Check replica status.
+        runbook_url: "https://longhorn.io/docs/latest/troubleshooting/"
+    
+    # Volume faulted (no healthy replicas)
+    - alert: LonghornVolumeFaulted
+      expr: |
+        longhorn_volume_robustness == 3
+      for: 1m
+      labels:
+        severity: critical
+        component: longhorn
+      annotations:
+        summary: "Longhorn volume is faulted"
+        description: |
+          Longhorn volume {{ $labels.volume }} is faulted with no healthy replicas.
+          Data may be at risk. Immediate action required.
+        runbook_url: "https://longhorn.io/docs/latest/troubleshooting/"
+    
+    # Volume not attached
+    - alert: LonghornVolumeNotAttached
+      expr: |
+        longhorn_volume_state{state!="attached",state!="detached"} == 1
+      for: 10m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn volume in unexpected state"
+        description: |
+          Longhorn volume {{ $labels.volume }} is in state {{ $labels.state }}.
+          This may indicate attachment or detachment issues.
+    
+    # Volume actual size exceeds capacity
+    - alert: LonghornVolumeOverProvisioned
+      expr: |
+        longhorn_volume_actual_size_bytes / longhorn_volume_capacity_bytes > 1.1
+      for: 15m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn volume is over-provisioned"
+        description: |
+          Volume {{ $labels.volume }} actual size is {{ $value | humanizePercentage }} of capacity.
+          This may indicate thin provisioning issues.
+
+  # Longhorn Volume Capacity Alerts
+  - name: longhorn.volume.capacity
+    interval: 60s
+    rules:
+    # Volume usage high (>80%)
+    # Note: Longhorn uses longhorn_volume_actual_size_bytes for actual used space
+    - alert: LonghornVolumeUsageHigh
+      expr: |
+        (longhorn_volume_actual_size_bytes / longhorn_volume_capacity_bytes) > 0.8
+        and longhorn_volume_capacity_bytes > 0
+      for: 15m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn volume usage is high"
+        description: |
+          Volume {{ $labels.volume }} is at {{ $value | humanizePercentage }} capacity.
+          Consider expanding the volume or cleaning up data.
+    
+    # Volume usage critical (>90%)
+    - alert: LonghornVolumeUsageCritical
+      expr: |
+        (longhorn_volume_actual_size_bytes / longhorn_volume_capacity_bytes) > 0.9
+        and longhorn_volume_capacity_bytes > 0
+      for: 5m
+      labels:
+        severity: critical
+        component: longhorn
+      annotations:
+        summary: "Longhorn volume usage is critical"
+        description: |
+          Volume {{ $labels.volume }} is at {{ $value | humanizePercentage }} capacity.
+          Immediate action required to prevent data loss.
+    
+    # Volume full
+    - alert: LonghornVolumeFull
+      expr: |
+        (longhorn_volume_actual_size_bytes / longhorn_volume_capacity_bytes) >= 0.99
+        and longhorn_volume_capacity_bytes > 0
+      for: 1m
+      labels:
+        severity: critical
+        component: longhorn
+      annotations:
+        summary: "Longhorn volume is full"
+        description: |
+          Volume {{ $labels.volume }} is full.
+          Applications may fail to write data.
+
+  # Longhorn Replica Alerts
+  - name: longhorn.replica
+    interval: 30s
+    rules:
+    # Replica failed
+    - alert: LonghornReplicaFailed
+      expr: |
+        longhorn_replica_state{state="failed"} == 1
+      for: 2m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn replica failed"
+        description: |
+          Replica {{ $labels.replica }} for volume {{ $labels.volume }} has failed.
+          Longhorn will attempt to rebuild.
+    
+    # Replica rebuilding for too long
+    - alert: LonghornReplicaRebuildingTooLong
+      expr: |
+        longhorn_replica_state{state="rebuilding"} == 1
+      for: 30m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn replica rebuilding for too long"
+        description: |
+          Replica {{ $labels.replica }} for volume {{ $labels.volume }} has been rebuilding for over 30 minutes.
+          Check network and disk performance.
+    
+    # Too many replicas rebuilding
+    - alert: LonghornTooManyReplicasRebuilding
+      expr: |
+        count(longhorn_replica_state{state="rebuilding"} == 1) > 3
+      for: 5m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Too many Longhorn replicas rebuilding"
+        description: "{{ $value }} replicas are currently rebuilding. This may impact performance."
+
+  # Longhorn Node Alerts
+  - name: longhorn.node
+    interval: 30s
+    rules:
+    # Node not schedulable
+    - alert: LonghornNodeNotSchedulable
+      expr: |
+        longhorn_node_status{condition="schedulable"} == 0
+      for: 10m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn node is not schedulable"
+        description: |
+          Node {{ $labels.node }} is not schedulable for new replicas.
+          Check node conditions and disk availability.
+    
+    # Node storage pressure
+    - alert: LonghornNodeStoragePressure
+      expr: |
+        longhorn_disk_usage_bytes / longhorn_disk_capacity_bytes > 0.8
+      for: 15m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn node storage pressure"
+        description: |
+          Node {{ $labels.node }} disk {{ $labels.disk }} is at {{ $value | humanizePercentage }} capacity.
+          This may affect new replica scheduling.
+    
+    # Node storage critical
+    - alert: LonghornNodeStorageCritical
+      expr: |
+        longhorn_disk_usage_bytes / longhorn_disk_capacity_bytes > 0.9
+      for: 5m
+      labels:
+        severity: critical
+        component: longhorn
+      annotations:
+        summary: "Longhorn node storage critical"
+        description: |
+          Node {{ $labels.node }} disk {{ $labels.disk }} is at {{ $value | humanizePercentage }} capacity.
+          Immediate action required.
+    
+    # Node disk not ready
+    - alert: LonghornNodeDiskNotReady
+      expr: |
+        longhorn_node_status{condition="ready"} == 0
+      for: 5m
+      labels:
+        severity: critical
+        component: longhorn
+      annotations:
+        summary: "Longhorn node disk not ready"
+        description: |
+          Node {{ $labels.node }} is not ready.
+          Check Longhorn manager and node status.
+
+  # Longhorn Manager Alerts
+  - name: longhorn.manager
+    interval: 30s
+    rules:
+    # Longhorn manager down
+    - alert: LonghornManagerDown
+      expr: |
+        up{job=~".*longhorn.*"} == 0
+      for: 2m
+      labels:
+        severity: critical
+        component: longhorn
+      annotations:
+        summary: "Longhorn manager is down"
+        description: "Longhorn manager is not responding. Check pod status and logs."
+    
+    # Longhorn manager restarts
+    - alert: LonghornManagerFrequentRestarts
+      expr: |
+        increase(kube_pod_container_status_restarts_total{container="longhorn-manager"}[1h]) > 3
+      for: 5m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn manager frequent restarts"
+        description: "Longhorn manager has restarted {{ $value }} times in the last hour."
+
+  # Longhorn Backup Alerts
+  # Note: These metrics may vary by Longhorn version. Verify metric availability.
+  - name: longhorn.backup
+    interval: 60s
+    rules:
+    # Backup target not available (Longhorn 1.4+)
+    - alert: LonghornBackupTargetUnavailable
+      expr: |
+        longhorn_backup_target_available == 0
+      for: 10m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn backup target unavailable"
+        description: "Backup target is not available. Backups cannot be created or restored."
+
+  # Longhorn Snapshot Alerts
+  - name: longhorn.snapshot
+    interval: 60s
+    rules:
+    # Too many snapshots
+    - alert: LonghornTooManySnapshots
+      expr: |
+        longhorn_volume_snapshot_count > 100
+      for: 30m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Too many Longhorn snapshots"
+        description: |
+          Volume {{ $labels.volume }} has {{ $value }} snapshots.
+          Consider cleaning up old snapshots to reduce storage usage.
+
+  # Longhorn Instance Manager Alerts
+  - name: longhorn.instancemanager
+    interval: 30s
+    rules:
+    # Instance manager pod restarts
+    - alert: LonghornInstanceManagerRestarts
+      expr: |
+        increase(kube_pod_container_status_restarts_total{
+          namespace="longhorn-system",
+          container=~".*instance-manager.*"
+        }[1h]) > 2
+      for: 5m
+      labels:
+        severity: warning
+        component: longhorn
+      annotations:
+        summary: "Longhorn instance manager restarts"
+        description: |
+          Instance manager pod {{ $labels.pod }} has restarted {{ $value }} times in the last hour.
+          Volumes on this node may be affected.
+

@@ -1,0 +1,283 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: nginx-ingress-alerts
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  groups:
+  # NGINX Ingress Controller Alerts
+  - name: nginx.ingress.availability
+    interval: 30s
+    rules:
+    # NGINX Ingress controller down
+    - alert: NginxIngressControllerDown
+      expr: |
+        absent(up{job=~".*nginx.*"})
+      for: 2m
+      labels:
+        severity: critical
+        component: nginx-ingress
+      annotations:
+        summary: "NGINX Ingress controller is down"
+        description: "NGINX Ingress controller has disappeared from Prometheus target discovery."
+    
+    # NGINX Ingress not ready
+    - alert: NginxIngressNotReady
+      expr: |
+        kube_deployment_status_replicas_ready{deployment=~".*nginx.*controller.*"} 
+        < kube_deployment_spec_replicas{deployment=~".*nginx.*controller.*"}
+      for: 5m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "NGINX Ingress controller replicas not ready"
+        description: |
+          NGINX Ingress has {{ $value }} ready replicas out of expected replicas.
+          Check pod status and events.
+
+  # NGINX Ingress Error Rate Alerts
+  - name: nginx.ingress.errors
+    interval: 30s
+    rules:
+    # High 4xx error rate
+    - alert: NginxIngressHigh4xxRate
+      expr: |
+        (
+          sum(rate(nginx_ingress_controller_requests{status=~"4.."}[5m])) by (ingress, namespace)
+          / sum(rate(nginx_ingress_controller_requests[5m])) by (ingress, namespace)
+        ) > 0.1
+        and sum(rate(nginx_ingress_controller_requests[5m])) by (ingress, namespace) > 0
+      for: 5m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "High 4xx error rate for ingress"
+        description: |
+          Ingress {{ $labels.namespace }}/{{ $labels.ingress }} has {{ $value | humanizePercentage }} 4xx errors.
+          This may indicate client-side issues or misconfigured routes.
+    
+    # High 5xx error rate
+    - alert: NginxIngressHigh5xxRate
+      expr: |
+        (
+          sum(rate(nginx_ingress_controller_requests{status=~"5.."}[5m])) by (ingress, namespace)
+          / sum(rate(nginx_ingress_controller_requests[5m])) by (ingress, namespace)
+        ) > 0.05
+        and sum(rate(nginx_ingress_controller_requests[5m])) by (ingress, namespace) > 0
+      for: 3m
+      labels:
+        severity: critical
+        component: nginx-ingress
+      annotations:
+        summary: "High 5xx error rate for ingress"
+        description: |
+          Ingress {{ $labels.namespace }}/{{ $labels.ingress }} has {{ $value | humanizePercentage }} 5xx errors.
+          This indicates backend service issues.
+    
+    # Global high 5xx rate
+    - alert: NginxIngressGlobalHigh5xxRate
+      expr: |
+        (
+          sum(rate(nginx_ingress_controller_requests{status=~"5.."}[5m])) 
+          / sum(rate(nginx_ingress_controller_requests[5m]))
+        ) > 0.01
+        and sum(rate(nginx_ingress_controller_requests[5m])) > 0
+      for: 5m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "Global high 5xx error rate on NGINX Ingress"
+        description: "Overall 5xx error rate across all ingresses is {{ $value | humanizePercentage }}."
+    
+    # Upstream response errors (high waiting connections)
+    - alert: NginxIngressHighWaitingConnections
+      expr: |
+        nginx_ingress_controller_nginx_process_connections{state="waiting"} > 100
+      for: 10m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "High number of waiting connections"
+        description: "NGINX Ingress has {{ $value }} waiting connections, indicating potential backend slowness."
+
+  # NGINX Ingress Latency Alerts
+  - name: nginx.ingress.latency
+    interval: 30s
+    rules:
+    # High request latency P95
+    - alert: NginxIngressHighLatency
+      expr: |
+        histogram_quantile(0.95, 
+          sum(rate(nginx_ingress_controller_request_duration_seconds_bucket[5m])) by (le, ingress, namespace)
+        ) > 5
+      for: 5m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "High request latency for ingress"
+        description: |
+          Ingress {{ $labels.namespace }}/{{ $labels.ingress }} P95 latency is {{ $value | humanizeDuration }}.
+          Check backend service performance.
+    
+    # Very high latency (potential timeout)
+    - alert: NginxIngressVeryHighLatency
+      expr: |
+        histogram_quantile(0.99, 
+          sum(rate(nginx_ingress_controller_request_duration_seconds_bucket[5m])) by (le, ingress, namespace)
+        ) > 30
+      for: 5m
+      labels:
+        severity: critical
+        component: nginx-ingress
+      annotations:
+        summary: "Very high latency approaching timeout"
+        description: |
+          Ingress {{ $labels.namespace }}/{{ $labels.ingress }} P99 latency is {{ $value | humanizeDuration }}.
+          Requests may be timing out.
+    
+    # Upstream connect time high
+    - alert: NginxIngressUpstreamConnectTimeHigh
+      expr: |
+        histogram_quantile(0.95,
+          sum(rate(nginx_ingress_controller_connect_duration_seconds_bucket[5m])) by (le)
+        ) > 0.5
+      for: 5m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "High upstream connect time"
+        description: "P95 upstream connect time is {{ $value | humanizeDuration }}. Check network or backend availability."
+
+  # NGINX Ingress Resource Alerts
+  - name: nginx.ingress.resources
+    interval: 30s
+    rules:
+    # High connection count
+    - alert: NginxIngressHighConnectionCount
+      expr: |
+        sum(nginx_ingress_controller_nginx_process_connections{state="active"}) > 1000
+      for: 5m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "High active connection count"
+        description: "NGINX Ingress has {{ $value }} active connections. Consider scaling or connection limits."
+    
+    # Worker connections saturation (based on default worker_connections of 16384)
+    - alert: NginxIngressConnectionsSaturation
+      expr: |
+        nginx_ingress_controller_nginx_process_connections{state="active"} > 10000
+      for: 5m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "NGINX connections nearing saturation"
+        description: "NGINX Ingress has {{ $value }} active connections, approaching worker_connections limit."
+    
+    # High memory usage (only if limits are set)
+    - alert: NginxIngressHighMemoryUsage
+      expr: |
+        (
+          container_memory_working_set_bytes{pod=~".*nginx.*controller.*"} 
+          / container_spec_memory_limit_bytes{pod=~".*nginx.*controller.*"}
+        ) > 0.9
+        and container_spec_memory_limit_bytes{pod=~".*nginx.*controller.*"} > 0
+      for: 5m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "NGINX Ingress high memory usage"
+        description: "NGINX Ingress is using {{ $value | humanizePercentage }} of memory limit."
+    
+    # High CPU usage (only if limits are set)
+    - alert: NginxIngressHighCPUUsage
+      expr: |
+        (
+          sum(rate(container_cpu_usage_seconds_total{pod=~".*nginx.*controller.*"}[5m])) by (pod)
+          / sum(container_spec_cpu_quota{pod=~".*nginx.*controller.*"} / container_spec_cpu_period{pod=~".*nginx.*controller.*"}) by (pod)
+        ) > 0.8
+        and sum(container_spec_cpu_quota{pod=~".*nginx.*controller.*"}) by (pod) > 0
+      for: 10m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "NGINX Ingress high CPU usage"
+        description: "NGINX Ingress is using more than 80% of CPU limit."
+
+  # NGINX Ingress SSL/TLS Alerts
+  - name: nginx.ingress.ssl
+    interval: 60s
+    rules:
+    # SSL certificate expiring soon
+    - alert: NginxIngressSSLCertExpiringSoon
+      expr: |
+        (nginx_ingress_controller_ssl_certificate_info - time()) / 86400 < 30
+      for: 1h
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "SSL certificate expiring soon"
+        description: |
+          SSL certificate for {{ $labels.host }} expires in {{ $value | humanizeDuration }}.
+          Renew the certificate before it expires.
+    
+    # SSL certificate expired or expiring very soon
+    - alert: NginxIngressSSLCertExpired
+      expr: |
+        (nginx_ingress_controller_ssl_certificate_info - time()) / 86400 < 7
+      for: 1h
+      labels:
+        severity: critical
+        component: nginx-ingress
+      annotations:
+        summary: "SSL certificate expired or expiring very soon"
+        description: |
+          SSL certificate for {{ $labels.host }} expires in {{ $value | humanizeDuration }} or has expired.
+          Immediate action required.
+
+  # NGINX Ingress Configuration Alerts
+  - name: nginx.ingress.config
+    interval: 60s
+    rules:
+    # Config reload failures
+    - alert: NginxIngressConfigReloadFailed
+      expr: |
+        nginx_ingress_controller_config_last_reload_successful == 0
+      for: 5m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "NGINX Ingress config reload failed"
+        description: |
+          NGINX Ingress controller failed to reload configuration.
+          Check ingress configurations for errors.
+    
+    # Frequent config reloads
+    - alert: NginxIngressFrequentConfigReloads
+      expr: |
+        increase(nginx_ingress_controller_success{controller_class="nginx"}[10m]) > 20
+      for: 10m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "Frequent NGINX config reloads"
+        description: |
+          NGINX Ingress has reloaded config {{ $value }} times in 10 minutes.
+          This may indicate rapid changes or instability.
+

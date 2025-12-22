@@ -1,0 +1,316 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: harbor-alerts
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  groups:
+  # Harbor Core Alerts
+  - name: harbor.core
+    interval: 30s
+    rules:
+    # High HTTP error rate from Harbor Core
+    - alert: HarborCoreHighErrorRate
+      expr: |
+        (
+          sum(rate(harbor_core_http_request_total{code=~"5.."}[5m])) 
+          / sum(rate(harbor_core_http_request_total[5m]))
+        ) > 0.05
+        and sum(rate(harbor_core_http_request_total[5m])) > 0
+      for: 5m
+      labels:
+        severity: critical
+        component: harbor
+        service: core
+      annotations:
+        summary: "Harbor Core has high 5xx error rate"
+        description: |
+          Harbor Core is returning 5xx errors at {{ $value | humanizePercentage }} of requests.
+          This may indicate backend issues or database problems.
+        runbook_url: "https://goharbor.io/docs/latest/administration/troubleshooting/"
+    
+    # Harbor Core request latency
+    - alert: HarborCoreHighLatency
+      expr: |
+        histogram_quantile(0.95, 
+          sum(rate(harbor_core_http_request_duration_seconds_bucket[5m])) by (le, operation)
+        ) > 2
+      for: 10m
+      labels:
+        severity: warning
+        component: harbor
+        service: core
+      annotations:
+        summary: "Harbor Core has high request latency"
+        description: |
+          Harbor Core operation {{ $labels.operation }} P95 latency is {{ $value | humanizeDuration }}.
+          This may indicate database slowness or resource contention.
+    
+    # Harbor Core unhealthy
+    - alert: HarborCoreUnhealthy
+      expr: |
+        up{job=~".*harbor.*core.*"} == 0
+      for: 2m
+      labels:
+        severity: critical
+        component: harbor
+        service: core
+      annotations:
+        summary: "Harbor Core is not responding"
+        description: "Harbor Core service is down or not responding to health checks."
+
+  # Harbor Registry Alerts
+  - name: harbor.registry
+    interval: 30s
+    rules:
+    # Registry push/pull errors
+    - alert: HarborRegistryHighErrorRate
+      expr: |
+        (
+          sum(rate(registry_http_requests_total{code=~"5.."}[5m])) 
+          / sum(rate(registry_http_requests_total[5m]))
+        ) > 0.01
+        and sum(rate(registry_http_requests_total[5m])) > 0
+      for: 5m
+      labels:
+        severity: critical
+        component: harbor
+        service: registry
+      annotations:
+        summary: "Harbor Registry has high error rate"
+        description: |
+          Harbor Registry is returning 5xx errors at {{ $value | humanizePercentage }} of requests.
+          This may indicate storage issues or filesystem corruption.
+        runbook_url: "https://goharbor.io/docs/latest/administration/troubleshooting/"
+    
+    # Registry storage operations (uses Docker Distribution metrics)
+    # Note: registry_storage_action_seconds tracks storage driver operations
+    - alert: HarborRegistryStorageError
+      expr: |
+        increase(registry_storage_action_seconds_count{action=~"GetContent|PutContent",driver="filesystem"}[5m]) == 0
+        and increase(registry_http_requests_total{method="PUT"}[5m]) > 0
+      for: 5m
+      labels:
+        severity: warning
+        component: harbor
+        service: registry
+      annotations:
+        summary: "Harbor Registry possible storage issues"
+        description: |
+          Harbor Registry storage operations may be failing.
+          Check Longhorn volume health and filesystem integrity.
+    
+    # Registry blob upload failures (5xx on blob operations)
+    - alert: HarborRegistryBlobUploadFailure
+      expr: |
+        sum(rate(registry_http_requests_total{method="PUT",code=~"5.."}[5m])) > 0
+      for: 3m
+      labels:
+        severity: critical
+        component: harbor
+        service: registry
+      annotations:
+        summary: "Harbor Registry blob upload failures"
+        description: |
+          Blob uploads to Harbor Registry are failing with 5xx errors.
+          This typically indicates storage backend issues.
+    
+    # Registry manifest upload failures (5xx on manifest PUT)
+    # Note: Docker Distribution registry doesn't have handler label, 
+    # we detect manifest uploads by content-type or URL pattern in logs
+    - alert: HarborRegistryManifestUploadFailure
+      expr: |
+        sum(rate(registry_http_requests_total{method="PUT",code="500"}[5m])) > 0
+      for: 2m
+      labels:
+        severity: critical
+        component: harbor
+        service: registry
+      annotations:
+        summary: "Harbor Registry 500 errors on uploads"
+        description: |
+          Uploads to Harbor Registry are failing with 500 errors.
+          This is often caused by storage filesystem issues or corruption.
+    
+    # Registry unhealthy
+    - alert: HarborRegistryUnhealthy
+      expr: |
+        up{job=~".*harbor.*registry.*"} == 0
+      for: 2m
+      labels:
+        severity: critical
+        component: harbor
+        service: registry
+      annotations:
+        summary: "Harbor Registry is not responding"
+        description: "Harbor Registry service is down or not responding to health checks."
+
+  # Harbor Database Alerts
+  - name: harbor.database
+    interval: 30s
+    rules:
+    # Database connection issues
+    - alert: HarborDatabaseConnectionError
+      expr: |
+        harbor_core_database_connection_error_total > 0
+      for: 2m
+      labels:
+        severity: critical
+        component: harbor
+        service: database
+      annotations:
+        summary: "Harbor database connection errors"
+        description: "Harbor Core is experiencing database connection issues."
+    
+    # Database slow queries
+    - alert: HarborDatabaseSlowQueries
+      expr: |
+        histogram_quantile(0.95, 
+          sum(rate(harbor_core_database_query_duration_seconds_bucket[5m])) by (le)
+        ) > 1
+      for: 10m
+      labels:
+        severity: warning
+        component: harbor
+        service: database
+      annotations:
+        summary: "Harbor database queries are slow"
+        description: "Harbor database P95 query latency is {{ $value | humanizeDuration }}."
+
+  # Harbor Job Service Alerts
+  - name: harbor.jobservice
+    interval: 30s
+    rules:
+    # Job failures
+    - alert: HarborJobServiceHighFailureRate
+      expr: |
+        rate(harbor_jobservice_job_status_total{status="failed"}[1h]) > 0.1
+      for: 10m
+      labels:
+        severity: warning
+        component: harbor
+        service: jobservice
+      annotations:
+        summary: "Harbor Job Service has high failure rate"
+        description: "Harbor Job Service is experiencing job failures: {{ $value }} failures/hour."
+    
+    # Job queue backed up
+    - alert: HarborJobServiceQueueBackedUp
+      expr: |
+        harbor_jobservice_job_pending_total > 100
+      for: 15m
+      labels:
+        severity: warning
+        component: harbor
+        service: jobservice
+      annotations:
+        summary: "Harbor Job Service queue is backed up"
+        description: "Harbor Job Service has {{ $value }} pending jobs."
+
+  # Harbor Trivy Scanner Alerts
+  - name: harbor.trivy
+    interval: 30s
+    rules:
+    # Trivy scan failures
+    - alert: HarborTrivyScanFailures
+      expr: |
+        rate(harbor_trivy_scan_total{status="error"}[1h]) > 0.1
+      for: 15m
+      labels:
+        severity: warning
+        component: harbor
+        service: trivy
+      annotations:
+        summary: "Harbor Trivy scanner has scan failures"
+        description: "Trivy vulnerability scanner is experiencing scan failures."
+    
+    # Trivy unhealthy
+    - alert: HarborTrivyUnhealthy
+      expr: |
+        up{job=~".*harbor.*trivy.*"} == 0
+      for: 5m
+      labels:
+        severity: warning
+        component: harbor
+        service: trivy
+      annotations:
+        summary: "Harbor Trivy scanner is not responding"
+        description: "Trivy vulnerability scanner is down."
+
+  # Harbor Project Quota Alerts
+  - name: harbor.quota
+    interval: 60s
+    rules:
+    # Project quota near limit
+    - alert: HarborProjectQuotaNearLimit
+      expr: |
+        harbor_project_quota_usage_byte / harbor_project_quota_byte > 0.9
+      for: 30m
+      labels:
+        severity: warning
+        component: harbor
+      annotations:
+        summary: "Harbor project quota near limit"
+        description: |
+          Harbor project {{ $labels.project_name }} is at {{ $value | humanizePercentage }} of quota.
+    
+    # Project quota exceeded
+    - alert: HarborProjectQuotaExceeded
+      expr: |
+        harbor_project_quota_usage_byte >= harbor_project_quota_byte
+      for: 5m
+      labels:
+        severity: critical
+        component: harbor
+      annotations:
+        summary: "Harbor project quota exceeded"
+        description: "Harbor project {{ $labels.project_name }} has exceeded its storage quota."
+
+  # Harbor Replication Alerts
+  - name: harbor.replication
+    interval: 60s
+    rules:
+    # Replication failures
+    - alert: HarborReplicationFailure
+      expr: |
+        harbor_replication_job_status{status="failed"} > 0
+      for: 15m
+      labels:
+        severity: warning
+        component: harbor
+        service: replication
+      annotations:
+        summary: "Harbor replication job failed"
+        description: "Harbor replication job {{ $labels.job_id }} has failed."
+
+  # Harbor General Health Alerts
+  - name: harbor.health
+    interval: 30s
+    rules:
+    # Harbor overall health
+    - alert: HarborUnhealthy
+      expr: |
+        harbor_health != 1
+      for: 5m
+      labels:
+        severity: critical
+        component: harbor
+      annotations:
+        summary: "Harbor is unhealthy"
+        description: "Harbor overall health check is failing. Check component status."
+    
+    # Component health checks
+    - alert: HarborComponentUnhealthy
+      expr: |
+        harbor_component_health != 1
+      for: 5m
+      labels:
+        severity: warning
+        component: harbor
+      annotations:
+        summary: "Harbor component {{ $labels.component }} is unhealthy"
+        description: "Harbor component {{ $labels.component }} health check is failing."
+

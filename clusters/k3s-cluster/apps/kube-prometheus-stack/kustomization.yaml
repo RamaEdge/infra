@@ -4,3 +4,11 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - helmrelease.yaml
+  # PrometheusRules for alerting
+  - prometheusrule-harbor.yaml
+  - prometheusrule-nginx-ingress.yaml
+  - prometheusrule-longhorn.yaml
+  # ServiceMonitors for metrics scraping
+  - servicemonitor-harbor.yaml
+  - servicemonitor-nginx-ingress.yaml
+  - servicemonitor-longhorn.yaml
