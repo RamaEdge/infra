@@ -6,9 +6,6 @@ metadata:
 spec:
   interval: 5m
   targetNamespace: keycloak
-  dependsOn:
-    - name: longhorn
-      namespace: flux-system
   install:
     createNamespace: false
     remediation:
