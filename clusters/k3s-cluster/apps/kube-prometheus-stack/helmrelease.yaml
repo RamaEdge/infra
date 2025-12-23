@@ -55,7 +55,6 @@ spec:
       # Load OAuth and SMTP credentials from secrets
       envFromSecrets:
         - name: grafana-google-oidc
-        - name: grafana-smtp
 
       grafana.ini:
         server:
@@ -71,13 +70,6 @@ spec:
           allow_sign_up: true
           allowed_domains: theedgeworks.ai
           scopes: https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
-        smtp:
-          enabled: true
-          host: smtp.gmail.com:587
-          from_address: alerts@theedgeworks.ai
-          from_name: Grafana Alerts
-          startTLS_policy: MandatoryStartTLS
-          # Credentials loaded via GF_SMTP_USER and GF_SMTP_PASSWORD env vars from grafana-smtp secret
 
       ingress:
         enabled: true
