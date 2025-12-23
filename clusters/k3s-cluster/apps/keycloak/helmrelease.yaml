@@ -104,33 +104,33 @@ spec:
         cpu: 1
         memory: 1Gi
 
-    # Health checks - use correct paths for Keycloak 26.x management interface
+    # Health checks - keycloakx chart uses http-relative-path=/auth
     health:
       enabled: true
 
-    # Override default health probe paths (remove /auth prefix for management interface)
+    # Override health probe paths to include /auth prefix
     startupProbe: |
       httpGet:
-        path: /health
+        path: /auth/health
         port: http-internal
-      initialDelaySeconds: 15
+      initialDelaySeconds: 30
       periodSeconds: 5
       failureThreshold: 60
-      timeoutSeconds: 1
+      timeoutSeconds: 5
 
     livenessProbe: |
       httpGet:
-        path: /health/live
+        path: /auth/health/live
         port: http-internal
-      periodSeconds: 10
+      periodSeconds: 15
       failureThreshold: 3
       timeoutSeconds: 5
 
     readinessProbe: |
       httpGet:
-        path: /health/ready
+        path: /auth/health/ready
         port: http-internal
-      initialDelaySeconds: 10
+      initialDelaySeconds: 30
       periodSeconds: 10
       failureThreshold: 3
-      timeoutSeconds: 1
+      timeoutSeconds: 5
