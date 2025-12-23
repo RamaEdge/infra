@@ -62,9 +62,9 @@ spec:
           root_url: https://monitor.theedgeworks.ai
           enable_gzip: true
         auth:
-          disable_login_form: false
+          disable_login_form: true
         auth.basic:
-          enabled: true
+          enabled: false
         auth.google:
           enabled: true
           allow_sign_up: true
