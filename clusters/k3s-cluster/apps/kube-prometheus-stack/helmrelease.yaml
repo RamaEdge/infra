@@ -77,6 +77,10 @@ spec:
           auth_url: https://auth.theedgeworks.ai/realms/theedgeworks/protocol/openid-connect/auth
           token_url: https://auth.theedgeworks.ai/realms/theedgeworks/protocol/openid-connect/token
           api_url: https://auth.theedgeworks.ai/realms/theedgeworks/protocol/openid-connect/userinfo
+          # Attribute mappings for Keycloak
+          email_attribute_path: email
+          login_attribute_path: preferred_username
+          name_attribute_path: name
           role_attribute_path: contains(groups[*], 'admin') && 'Admin' || 'Viewer'
 
       ingress:
