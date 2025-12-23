@@ -6,3 +6,4 @@ resources:
   - prometheus-community-helmrepository.yaml
   - bitnami-helmrepository.yaml
   - codecentric-helmrepository.yaml
+  - monitoring-config-ks.yaml
