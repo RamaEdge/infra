@@ -33,6 +33,7 @@ spec:
       - "--http-port=8080"
       - "--hostname=https://auth.theedgeworks.ai"
       - "--proxy-headers=xforwarded"
+      - "--http-relative-path=/"
       - "--spi-events-listener-jboss-logging-success-level=info"
       - "--spi-events-listener-jboss-logging-error-level=warn"
 
@@ -48,6 +49,8 @@ spec:
           secretKeyRef:
             name: keycloak-admin-credentials
             key: password
+      - name: KC_HTTP_RELATIVE_PATH
+        value: "/"
       - name: JAVA_OPTS_APPEND
         value: "-XX:MaxRAMPercentage=70.0 -XX:+ExitOnOutOfMemoryError -Djava.awt.headless=true -Djgroups.dns.query=keycloak-keycloak-keycloakx-headless.keycloak.svc.cluster.local"
 
@@ -106,14 +109,14 @@ spec:
         cpu: 1
         memory: 1Gi
 
-    # Health checks - keycloakx chart uses http-relative-path=/auth
+    # Health checks
     health:
       enabled: true
 
-    # Override health probe paths to include /auth prefix
+    # Health probe paths at root (no /auth prefix for modern Keycloak)
     startupProbe: |
       httpGet:
-        path: /auth/health
+        path: /health
         port: http-internal
       initialDelaySeconds: 30
       periodSeconds: 5
@@ -122,7 +125,7 @@ spec:
 
     livenessProbe: |
       httpGet:
-        path: /auth/health/live
+        path: /health/live
         port: http-internal
       periodSeconds: 15
       failureThreshold: 3
@@ -130,7 +133,7 @@ spec:
 
     readinessProbe: |
       httpGet:
-        path: /auth/health/ready
+        path: /health/ready
         port: http-internal
       initialDelaySeconds: 30
       periodSeconds: 10
