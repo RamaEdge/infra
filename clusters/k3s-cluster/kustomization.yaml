@@ -6,3 +6,5 @@ resources:
   - apps/harbor
   - apps/keycloak
   - apps/kube-prometheus-stack
+  - apps/minio-operator
+  - apps/minio
