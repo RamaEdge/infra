@@ -39,9 +39,29 @@ Click **Next**
 |-------|-------|
 | Root URL | `https://monitor.theedgeworks.ai` |
 | Home URL | `https://monitor.theedgeworks.ai` |
-| Valid redirect URIs | `https://monitor.theedgeworks.ai/login/generic_oauth` |
-| Valid post logout redirect URIs | `https://monitor.theedgeworks.ai/login` |
-| Web origins | `https://monitor.theedgeworks.ai` |
+| Valid redirect URIs | See table below |
+| Valid post logout redirect URIs | See table below |
+| Web origins | `https://*.theedgeworks.ai` |
+
+#### Redirect URIs (for shared client supporting multiple services)
+
+**Valid redirect URIs:**
+| Service | Redirect URI |
+|---------|-------------|
+| Grafana | `https://monitor.theedgeworks.ai/login/generic_oauth` |
+| MinIO | `https://storage-console.theedgeworks.ai/oauth_callback` |
+| Harbor | `https://harbor.theedgeworks.ai/c/oidc/callback` |
+| Longhorn | `https://longhorn.theedgeworks.ai/oauth2/callback` |
+
+**Valid post logout redirect URIs:**
+| Service | Post Logout Redirect URI |
+|---------|-------------------------|
+| Grafana | `https://monitor.theedgeworks.ai/login` |
+| MinIO | `https://storage-console.theedgeworks.ai` |
+| Harbor | `https://harbor.theedgeworks.ai` |
+| Longhorn | `https://longhorn.theedgeworks.ai` |
+
+> **Note:** Post logout redirect URIs tell Keycloak where to redirect users after they log out. These must be whitelisted in Keycloak for the logout flow to work properly.
 
 Click **Save**
 
