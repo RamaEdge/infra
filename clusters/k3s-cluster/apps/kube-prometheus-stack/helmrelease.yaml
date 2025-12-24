@@ -60,12 +60,16 @@ spec:
         - name: keycloak-oidc
 
       grafana.ini:
+        log:
+          level: debug
+          filters: oauth:debug auth:debug user:debug
         server:
           domain: monitor.theedgeworks.ai
           root_url: https://monitor.theedgeworks.ai
           enable_gzip: true
         auth:
           disable_login_form: true
+          oauth_allow_insecure_email_lookup: true
         auth.basic:
           enabled: false
         auth.generic_oauth:
