@@ -61,7 +61,7 @@ spec:
           name: keycloak-oidc
           key: client-secret
     - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
-      value: "policy"
+      value: "policy"  # Claim containing the MinIO policy name
     - name: MINIO_IDENTITY_OPENID_CLAIM_PREFIX
       value: ""
     - name: MINIO_IDENTITY_OPENID_SCOPES
@@ -96,8 +96,32 @@ MinIO uses a `policy` claim to determine user permissions. Create a mapper in Ke
 
 ### Option B: Group-Based Policy
 
-1. Create a **Group Membership** mapper with claim name `groups`
-2. Use MinIO's group-to-policy mapping
+For group-based policy mapping, change the claim name to `groups`:
+
+1. Update `MINIO_IDENTITY_OPENID_CLAIM_NAME` in tenant.yaml:
+   ```yaml
+   - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
+     value: "groups"
+   ```
+
+2. Create a **Group Membership** mapper in Keycloak:
+   | Field | Value |
+   |-------|-------|
+   | Name | `groups` |
+   | Token Claim Name | `groups` |
+   | Full group path | OFF |
+   | Add to ID token | ON |
+   | Add to access token | ON |
+   | Add to userinfo | ON |
+
+3. Create Keycloak groups that **exactly match** MinIO policy names:
+   - `readonly` → MinIO `readonly` policy
+   - `readwrite` → MinIO `readwrite` policy
+   - `consoleAdmin` → MinIO `consoleAdmin` policy
+
+4. Assign users to appropriate groups in Keycloak
+
+**Note**: With this approach, the Keycloak group name must exactly match a MinIO policy name.
 
 ## MinIO Policies
 
