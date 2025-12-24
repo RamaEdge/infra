@@ -12,10 +12,6 @@ spec:
     name: infra
     namespace: flux-system
   dependsOn:
-    - name: minio-helmrepository
-  healthChecks:
-    - apiVersion: apps/v1
-      kind: Deployment
-      name: minio-operator
-      namespace: minio-operator
-  timeout: 5m
+    - name: infra  # Wait for infra kustomization (which deploys minio-operator)
+  wait: true
+  timeout: 10m

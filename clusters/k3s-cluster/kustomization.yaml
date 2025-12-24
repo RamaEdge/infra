@@ -7,4 +7,5 @@ resources:
   - apps/keycloak
   - apps/kube-prometheus-stack
   - apps/minio-operator
-  - apps/minio
+  # apps/minio is deployed via flux-system/minio-tenant-ks.yaml
+  # which waits for minio-operator to be ready first
