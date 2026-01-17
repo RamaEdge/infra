@@ -35,6 +35,7 @@ spec:
                   storage: 500Gi
         # Retention configuration
         retention: 10d
+        retentionSize: 450GB
         # Scrape ServiceMonitors from all namespaces
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false
