@@ -52,7 +52,7 @@ data:
           "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
           "pluginVersion": "10.0.0",
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "up{job=~\".*harbor.*core.*\"}", "legendFormat": "Core", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_up{component=\"core\"}", "legendFormat": "Core", "refId": "A" }
           ],
           "title": "Core Status",
           "type": "stat"
@@ -74,7 +74,7 @@ data:
           "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
           "pluginVersion": "10.0.0",
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "up{job=~\".*harbor.*registry.*\"}", "legendFormat": "Registry", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "up{job=~\".*harbor-registry.*\"}", "legendFormat": "Registry", "refId": "A" }
           ],
           "title": "Registry Status",
           "type": "stat"
@@ -96,7 +96,7 @@ data:
           "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
           "pluginVersion": "10.0.0",
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "up{job=~\".*harbor.*trivy.*\"}", "legendFormat": "Trivy", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_up{component=\"trivy\"}", "legendFormat": "Trivy", "refId": "A" }
           ],
           "title": "Trivy Status",
           "type": "stat"
@@ -116,7 +116,7 @@ data:
           "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
           "pluginVersion": "10.0.0",
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(rate(harbor_core_http_request_total[5m]))", "legendFormat": "RPS", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(rate(registry_http_request_duration_seconds_count[5m]))", "legendFormat": "RPS", "refId": "A" }
           ],
           "title": "Total Request Rate",
           "type": "stat"
@@ -125,24 +125,21 @@ data:
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "thresholds" },
-              "decimals": 2,
-              "max": 1,
-              "min": 0,
-              "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "red", "value": 0.05 } ] },
-              "unit": "percentunit"
+              "color": { "mode": "palette-classic" },
+              "decimals": 0,
+              "unit": "short"
             },
             "overrides": []
           },
           "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
           "id": 6,
-          "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true },
+          "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
           "pluginVersion": "10.0.0",
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(rate(harbor_core_http_request_total{code=~\"5..\"}[5m])) / sum(rate(harbor_core_http_request_total[5m]))", "legendFormat": "Error Rate", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_statistics_total_project_amount", "legendFormat": "Projects", "refId": "A" }
           ],
-          "title": "Error Rate",
-          "type": "gauge"
+          "title": "Total Projects",
+          "type": "stat"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -159,9 +156,9 @@ data:
           "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
           "pluginVersion": "10.0.0",
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_jobservice_job_pending_total", "legendFormat": "Pending", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_statistics_total_repo_amount", "legendFormat": "Repos", "refId": "A" }
           ],
-          "title": "Pending Jobs",
+          "title": "Total Repos",
           "type": "stat"
         },
         {
@@ -169,7 +166,7 @@ data:
           "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
           "id": 10,
           "panels": [],
-          "title": "Core API",
+          "title": "Storage & Artifacts",
           "type": "row"
         },
         {
@@ -177,19 +174,19 @@ data:
           "fieldConfig": {
             "defaults": {
               "color": { "mode": "palette-classic" },
-              "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "normal" }, "thresholdsStyle": { "mode": "off" } },
+              "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
               "mappings": [],
-              "unit": "reqps"
+              "unit": "bytes"
             },
             "overrides": []
           },
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
           "id": 11,
-          "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+          "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(rate(harbor_core_http_request_total[5m])) by (code)", "legendFormat": "{{code}}", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_statistics_total_storage_consumption", "legendFormat": "Total Storage", "refId": "A" }
           ],
-          "title": "Request Rate by Status Code",
+          "title": "Total Storage Consumption",
           "type": "timeseries"
         },
         {
@@ -199,7 +196,7 @@ data:
               "color": { "mode": "palette-classic" },
               "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
               "mappings": [],
-              "unit": "s"
+              "unit": "short"
             },
             "overrides": []
           },
@@ -207,9 +204,9 @@ data:
           "id": 12,
           "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "histogram_quantile(0.95, sum(rate(harbor_core_http_request_duration_seconds_bucket[5m])) by (le, operation))", "legendFormat": "{{operation}}", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(rate(harbor_artifact_pulled[5m])) by (project_name)", "legendFormat": "{{project_name}}", "refId": "A" }
           ],
-          "title": "P95 Latency by Operation",
+          "title": "Artifact Pull Rate by Project",
           "type": "timeseries"
         },
         {
@@ -235,38 +232,10 @@ data:
           "id": 21,
           "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(rate(registry_http_requests_total[5m])) by (method)", "legendFormat": "{{method}}", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(rate(registry_http_request_duration_seconds_count[5m])) by (method)", "legendFormat": "{{method}}", "refId": "A" }
           ],
           "title": "Registry Request Rate by Method",
           "type": "timeseries"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "palette-classic" },
-              "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
-              "mappings": [],
-              "unit": "reqps"
-            },
-            "overrides": []
-          },
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
-          "id": 22,
-          "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-          "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(rate(registry_http_requests_total{code=~\"5..\"}[5m])) by (code)", "legendFormat": "{{code}}", "refId": "A" }
-          ],
-          "title": "Registry Errors by Status Code",
-          "type": "timeseries"
-        },
-        {
-          "collapsed": false,
-          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
-          "id": 30,
-          "panels": [],
-          "title": "Database",
-          "type": "row"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -279,43 +248,21 @@ data:
             },
             "overrides": []
           },
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
-          "id": 31,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+          "id": 22,
           "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "histogram_quantile(0.95, sum(rate(harbor_core_database_query_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P95", "refId": "A" },
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "histogram_quantile(0.50, sum(rate(harbor_core_database_query_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P50", "refId": "B" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "histogram_quantile(0.95, sum(rate(registry_http_request_duration_seconds_bucket[5m])) by (le, handler))", "legendFormat": "{{handler}}", "refId": "A" }
           ],
-          "title": "Database Query Latency",
+          "title": "Registry P95 Latency by Handler",
           "type": "timeseries"
         },
         {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "mappings": [],
-              "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] },
-              "unit": "short"
-            },
-            "overrides": []
-          },
-          "gridPos": { "h": 8, "w": 6, "x": 12, "y": 24 },
-          "id": 32,
-          "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-          "pluginVersion": "10.0.0",
-          "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_core_database_connection_error_total", "legendFormat": "Errors", "refId": "A" }
-          ],
-          "title": "Database Connection Errors",
-          "type": "stat"
-        },
-        {
           "collapsed": false,
-          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
-          "id": 40,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+          "id": 30,
           "panels": [],
-          "title": "Job Service & Trivy",
+          "title": "Task Queue",
           "type": "row"
         },
         {
@@ -329,13 +276,107 @@ data:
             },
             "overrides": []
           },
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
-          "id": 41,
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+          "id": 31,
           "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_jobservice_job_status_total", "legendFormat": "{{status}}", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_task_queue_size", "legendFormat": "Queue Size", "refId": "A" }
           ],
-          "title": "Jobs by Status",
+          "title": "Task Queue Size",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+              "mappings": [],
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+          "id": 32,
+          "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+          "targets": [
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_task_queue_latency", "legendFormat": "Queue Latency", "refId": "A" }
+          ],
+          "title": "Task Queue Latency",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "decimals": 0,
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+          "id": 33,
+          "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_task_concurrency", "legendFormat": "Concurrency", "refId": "A" }
+          ],
+          "title": "Task Concurrency",
+          "type": "stat"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+          "id": 40,
+          "panels": [],
+          "title": "Component Status",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [
+                { "options": { "0": { "color": "red", "index": 1, "text": "Down" }, "1": { "color": "green", "index": 0, "text": "Up" } }, "type": "value" }
+              ],
+              "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 4, "w": 24, "x": 0, "y": 33 },
+          "id": 41,
+          "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_up{component=\"core\"}", "legendFormat": "Core", "refId": "A" },
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_up{component=\"jobservice\"}", "legendFormat": "Job Service", "refId": "B" },
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_up{component=\"trivy\"}", "legendFormat": "Trivy", "refId": "C" },
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_up{component=\"registry\"}", "legendFormat": "Registry", "refId": "D" },
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_up{component=\"portal\"}", "legendFormat": "Portal", "refId": "E" }
+          ],
+          "title": "Component Health Status",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "linear", "lineWidth": 1, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+              "mappings": [],
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 37 },
+          "id": 42,
+          "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+          "targets": [
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "rate(harbor_task_scheduled_total[5m])", "legendFormat": "Scheduled Tasks/s", "refId": "A" }
+          ],
+          "title": "Task Scheduled Rate",
           "type": "timeseries"
         },
         {
@@ -349,13 +390,13 @@ data:
             },
             "overrides": []
           },
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 33 },
-          "id": 42,
-          "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 37 },
+          "id": 43,
+          "options": { "legend": { "calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
           "targets": [
-            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(rate(harbor_trivy_scan_total[5m])) by (status)", "legendFormat": "{{status}}", "refId": "A" }
+            { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "harbor_project_artifact_total", "legendFormat": "{{project_name}}", "refId": "A" }
           ],
-          "title": "Trivy Scan Rate by Status",
+          "title": "Artifacts by Project",
           "type": "timeseries"
         },
         {
