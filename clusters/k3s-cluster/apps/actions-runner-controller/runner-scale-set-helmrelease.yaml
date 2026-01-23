@@ -24,9 +24,9 @@ spec:
   values:
     # GitHub configuration
     githubConfigUrl: "https://github.com/ramaedge"
-    githubConfigSecret:
-      create: false
-      name: arc-runner-set-secret
+    # Reference to pre-existing secret in arc-runners namespace
+    # Secret must have key: github_token
+    githubConfigSecret: arc-runner-set-secret
     
     # Auto-scaling configuration
     minRunners: 0
