@@ -40,7 +40,7 @@ spec:
           fsGroup: 1001
         containers:
           - name: runner
-            image: ghcr.io/actions/actions-runner:latest
+            image: harbor.theedgeworks.ai/base/actions-runner:v0.1.1
             command: ["/home/runner/run.sh"]
             resources:
               requests:
