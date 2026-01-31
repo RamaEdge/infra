@@ -40,8 +40,6 @@ spec:
     # Runner pod template
     template:
       spec:
-        imagePullSecrets:
-          - name: harbor-regcred
         securityContext:
           fsGroup: 1001
         containers:
@@ -59,7 +57,7 @@ spec:
               - name: work
                 mountPath: /home/runner/_work
               - name: docker-config
-                mountPath: /home/runner/.docker
+                mountPath: /root/.docker
                 readOnly: true  
         # Persistent storage for workspace using Longhorn
         # Each runner pod gets its own PVC via ephemeral volumeClaimTemplate
