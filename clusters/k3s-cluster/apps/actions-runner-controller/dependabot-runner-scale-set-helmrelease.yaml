@@ -43,6 +43,11 @@ spec:
         securityContext:
           fsGroup: 1001
         containers:
+          - name: dind
+            volumeMounts:
+            - name: docker-config
+              mountPath: /root/.docker
+              readOnly: true
           - name: runner
             image: harbor.theedgeworks.ai/base/actions-runner-dependabot:v0.2.1
             command: ["/home/runner/run.sh"]
