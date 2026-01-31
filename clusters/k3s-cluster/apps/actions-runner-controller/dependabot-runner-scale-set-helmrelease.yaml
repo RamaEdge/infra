@@ -65,6 +65,7 @@ spec:
           - name: docker-config
             secret:
               secretName: harbor-docker-config
+              defaultMode: 0444
           - name: work
             ephemeral:
               volumeClaimTemplate:
