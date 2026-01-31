@@ -58,9 +58,15 @@ spec:
             volumeMounts:
               - name: work
                 mountPath: /home/runner/_work
+              - name: docker-config
+                mountPath: /home/runner/.docker
+                readOnly: true  
         # Persistent storage for workspace using Longhorn
         # Each runner pod gets its own PVC via ephemeral volumeClaimTemplate
         volumes:
+          - name: docker-config
+            secret:
+              secretName: harbor-docker-config
           - name: work
             ephemeral:
               volumeClaimTemplate:
