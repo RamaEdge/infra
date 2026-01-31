@@ -46,6 +46,8 @@ spec:
           - name: runner
             image: harbor.theedgeworks.ai/base/actions-runner-dependabot:v0.2.1
             command: ["/home/runner/run.sh"]
+            securityContext:
+              privileged: true
             resources:
               requests:
                 cpu: "1"
