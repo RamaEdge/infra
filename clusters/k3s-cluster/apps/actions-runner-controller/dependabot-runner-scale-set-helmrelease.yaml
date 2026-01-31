@@ -40,6 +40,8 @@ spec:
     # Runner pod template
     template:
       spec:
+        imagePullSecrets:
+          - name: harbor-regcred
         securityContext:
           fsGroup: 1001
         containers:
