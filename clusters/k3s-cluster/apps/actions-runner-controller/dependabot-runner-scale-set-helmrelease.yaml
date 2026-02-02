@@ -27,7 +27,7 @@ spec:
     githubConfigSecret: arc-runner-set-secret
     runnerLabels:
       - dependabot
-    minRunners: 1  # TEMP: debugging
+    minRunners: 0
     maxRunners: 10
     # REMOVED: containerMode.type: dind - using full custom template instead
     # This is required because the Helm chart ignores custom dind volumeMounts
