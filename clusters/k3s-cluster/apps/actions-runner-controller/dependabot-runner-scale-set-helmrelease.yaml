@@ -27,7 +27,7 @@ spec:
     githubConfigSecret: arc-runner-set-secret
     runnerLabels:
       - dependabot
-    minRunners: 1  # TEMPORARY: Set to 1 for debugging, revert to 0 after
+    minRunners: 1  # TEMP: debugging
     maxRunners: 10
     # REMOVED: containerMode.type: dind - using full custom template instead
     # This is required because the Helm chart ignores custom dind volumeMounts
@@ -106,18 +106,24 @@ spec:
                 readOnly: true
           - name: dind
             image: docker:dind
-            args:
-              - dockerd
-              - --host=unix:///var/run/docker.sock
-              - --group=123
-              - --dns=8.8.8.8
-              - --dns=8.8.4.4
-              - --mtu=1450
+            command:
+              - /bin/sh
+              - -c
+              - |
+                # Create Docker daemon config with DNS and network settings
+                mkdir -p /etc/docker
+                cat > /etc/docker/daemon.json <<EOF
+                {
+                  "dns": ["8.8.8.8", "8.8.4.4"],
+                  "mtu": 1450,
+                  "storage-driver": "overlay2"
+                }
+                EOF
+                # Start dockerd
+                exec dockerd --host=unix:///var/run/docker.sock --group=123
             env:
               - name: DOCKER_GROUP_GID
                 value: "123"
-              - name: DOCKER_DRIVER
-                value: overlay2
             securityContext:
               privileged: true
             resources:
