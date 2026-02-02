@@ -115,8 +115,11 @@ spec:
                 cat > /etc/docker/daemon.json <<EOF
                 {
                   "dns": ["8.8.8.8", "8.8.4.4"],
+                  "dns-search": ["."],
+                  "dns-opts": ["ndots:1", "single-request", "timeout:2", "attempts:3"],
                   "mtu": 1450,
-                  "storage-driver": "overlay2"
+                  "storage-driver": "overlay2",
+                  "ipv6": false
                 }
                 EOF
                 # Start dockerd
