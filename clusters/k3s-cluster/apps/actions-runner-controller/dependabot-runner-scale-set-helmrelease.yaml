@@ -34,6 +34,17 @@ spec:
     # when containerMode.type: dind is set (see GitHub Issue #3281)
     template:
       spec:
+        dnsPolicy: "None"
+        dnsConfig:
+          nameservers:
+            - 8.8.8.8
+            - 8.8.4.4
+          searches:
+            - arc-runners.svc.cluster.local
+          options:
+            - name: ndots
+              value: "1"
+            - name: single-request-reopen
         securityContext:
           fsGroup: 1001
         initContainers:
