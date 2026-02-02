@@ -23,34 +23,35 @@ spec:
       retries: 3
   values:
     runnerScaleSetName: dependabot
-    # GitHub configuration
     githubConfigUrl: "https://github.com/ramaedge"
-    # Reference to pre-existing secret in arc-runners namespace
-    # Secret must have key: github_token
     githubConfigSecret: arc-runner-set-secret
-    # Dependabot targets runners by label
     runnerLabels:
       - dependabot
-    # Auto-scaling configuration
     minRunners: 0
     maxRunners: 10
-    # Dependabot uses job containers, so enable dind mode
-    containerMode:
-      type: dind
-    # Runner pod template
+    # REMOVED: containerMode.type: dind - using full custom template instead
+    # This is required because the Helm chart ignores custom dind volumeMounts
+    # when containerMode.type: dind is set (see GitHub Issue #3281)
     template:
       spec:
         securityContext:
           fsGroup: 1001
-        containers:
-          - name: dind
+        initContainers:
+          - name: init-dind-externals
+            image: ghcr.io/actions/actions-runner:latest
+            command: ["cp", "-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
             volumeMounts:
-            - name: docker-config
-              mountPath: /root/.docker
-              readOnly: true
+              - name: dind-externals
+                mountPath: /home/runner/tmpDir
+        containers:
           - name: runner
             image: harbor.theedgeworks.ai/base/actions-runner-dependabot:v0.2.1
             command: ["/home/runner/run.sh"]
+            env:
+              - name: DOCKER_HOST
+                value: unix:///var/run/docker.sock
+              - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+                value: "120"
             securityContext:
               privileged: true
             resources:
@@ -63,23 +64,51 @@ spec:
             volumeMounts:
               - name: work
                 mountPath: /home/runner/_work
+              - name: dind-sock
+                mountPath: /var/run
+              - name: dind-externals
+                mountPath: /home/runner/externals
+          - name: dind
+            image: docker:dind
+            args:
+              - dockerd
+              - --host=unix:///var/run/docker.sock
+              - --group=123
+            env:
+              - name: DOCKER_GROUP_GID
+                value: "123"
+              - name: DOCKER_CONFIG
+                value: /docker-credentials
+            securityContext:
+              privileged: true
+            volumeMounts:
+              - name: work
+                mountPath: /home/runner/_work
+              - name: dind-sock
+                mountPath: /var/run
+              - name: dind-externals
+                mountPath: /home/runner/externals
               - name: docker-config
-                mountPath: /etc/docker
-                readOnly: true 
-        # Persistent storage for workspace using Longhorn
-        # Each runner pod gets its own PVC via ephemeral volumeClaimTemplate
+                mountPath: /docker-credentials
+                readOnly: true
         volumes:
-          - name: docker-config
-            secret:
-              secretName: harbor-docker-config
-              defaultMode: 0444
           - name: work
             ephemeral:
               volumeClaimTemplate:
                 spec:
-                  accessModes:
-                    - ReadWriteOnce
+                  accessModes: ["ReadWriteOnce"]
                   storageClassName: longhorn
                   resources:
                     requests:
                       storage: 5Gi
+          - name: dind-sock
+            emptyDir: {}
+          - name: dind-externals
+            emptyDir: {}
+          - name: docker-config
+            secret:
+              secretName: harbor-docker-config
+              defaultMode: 0400
+              items:
+                - key: config.json
+                  path: config.json
