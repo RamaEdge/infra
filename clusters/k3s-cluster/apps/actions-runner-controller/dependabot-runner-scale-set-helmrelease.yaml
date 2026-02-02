@@ -110,9 +110,14 @@ spec:
               - dockerd
               - --host=unix:///var/run/docker.sock
               - --group=123
+              - --dns=8.8.8.8
+              - --dns=8.8.4.4
+              - --mtu=1450
             env:
               - name: DOCKER_GROUP_GID
                 value: "123"
+              - name: DOCKER_DRIVER
+                value: overlay2
             securityContext:
               privileged: true
             resources:
