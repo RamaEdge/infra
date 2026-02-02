@@ -121,24 +121,18 @@ spec:
               - /bin/sh
               - -c
               - |
-                # Create Docker daemon config with DNS and network settings
+                # Create Docker daemon config - MTU for all networks
                 mkdir -p /etc/docker
                 cat > /etc/docker/daemon.json <<EOF
                 {
-                  "dns": ["8.8.8.8", "8.8.4.4"],
-                  "dns-search": ["."],
-                  "dns-opts": ["ndots:1", "single-request", "timeout:2", "attempts:3"],
                   "mtu": 1400,
-                  "storage-driver": "overlay2",
-                  "ipv6": false,
-                  "bridge": "docker0",
-                  "iptables": true,
-                  "ip-forward": true,
-                  "ip-masq": true
+                  "default-network-opts": {
+                    "bridge": {
+                      "com.docker.network.driver.mtu": "1400"
+                    }
+                  }
                 }
                 EOF
-                # Ensure IP forwarding is enabled
-                echo 1 > /proc/sys/net/ipv4/ip_forward
                 # Start dockerd
                 exec dockerd --host=unix:///var/run/docker.sock --group=123
             env:
