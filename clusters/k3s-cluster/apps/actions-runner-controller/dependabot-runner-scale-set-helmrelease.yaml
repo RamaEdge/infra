@@ -46,12 +46,25 @@ spec:
         containers:
           - name: runner
             image: harbor.theedgeworks.ai/base/actions-runner-dependabot:v0.2.1
-            command: ["/home/runner/run.sh"]
+            command:
+              - /bin/sh
+              - -c
+              - |
+                # Copy Docker config to writable location (runs as runner user)
+                mkdir -p /home/runner/.docker
+                cp /docker-config-secret/config.json /home/runner/.docker/config.json
+                chmod 600 /home/runner/.docker/config.json
+                # Start the runner
+                exec /home/runner/run.sh
             env:
+              - name: HOME
+                value: /home/runner
               - name: DOCKER_HOST
                 value: unix:///var/run/docker.sock
               - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
                 value: "120"
+              - name: DOCKER_CONFIG
+                value: /home/runner/.docker
             securityContext:
               privileged: true
             resources:
@@ -68,17 +81,24 @@ spec:
                 mountPath: /var/run
               - name: dind-externals
                 mountPath: /home/runner/externals
+              - name: docker-config
+                mountPath: /docker-config-secret
+                readOnly: true
           - name: dind
             image: docker:dind
-            args:
-              - dockerd
-              - --host=unix:///var/run/docker.sock
-              - --group=123
+            command:
+              - /bin/sh
+              - -c
+              - |
+                # Copy secret to writable location for docker login state
+                mkdir -p /root/.docker
+                cp /docker-config-secret/config.json /root/.docker/config.json
+                chmod 600 /root/.docker/config.json
+                # Start dockerd
+                exec dockerd --host=unix:///var/run/docker.sock --group=123
             env:
               - name: DOCKER_GROUP_GID
                 value: "123"
-              - name: DOCKER_CONFIG
-                value: /docker-credentials
             securityContext:
               privileged: true
             volumeMounts:
@@ -89,7 +109,7 @@ spec:
               - name: dind-externals
                 mountPath: /home/runner/externals
               - name: docker-config
-                mountPath: /docker-credentials
+                mountPath: /docker-config-secret
                 readOnly: true
         volumes:
           - name: work
@@ -108,7 +128,7 @@ spec:
           - name: docker-config
             secret:
               secretName: harbor-docker-config
-              defaultMode: 0400
+              defaultMode: 0444
               items:
                 - key: config.json
                   path: config.json
