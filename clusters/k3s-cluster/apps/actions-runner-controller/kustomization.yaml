@@ -7,3 +7,4 @@ resources:
   - operator-helmrelease.yaml
   - runner-scale-set-helmrelease.yaml
   - dependabot-runner-scale-set-helmrelease.yaml
+  - code-quality-runner-helmrelease.yaml
