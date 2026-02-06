@@ -6,6 +6,8 @@ resources:
   - apps/harbor
   - apps/keycloak
   - apps/kube-prometheus-stack
+  - apps/loki
+  - apps/opentelemetry-collector
 #  - apps/minio-operator
   - apps/actions-runner-controller
   # apps/minio is deployed via flux-system/minio-tenant-ks.yaml

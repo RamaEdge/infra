@@ -6,6 +6,8 @@ resources:
   - prometheus-community-helmrepository.yaml
   - bitnami-helmrepository.yaml
   - codecentric-helmrepository.yaml
+  - grafana-helmrepository.yaml
+  - opentelemetry-helmrepository.yaml
   - monitoring-config-ks.yaml
 #  - minio-helmrepository.yaml
 #  - minio-tenant-ks.yaml

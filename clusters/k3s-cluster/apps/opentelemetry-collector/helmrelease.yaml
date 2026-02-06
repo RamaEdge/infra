@@ -1,0 +1,159 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: opentelemetry-collector
+  namespace: monitoring
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: opentelemetry-collector
+      version: "0.108.0"
+      sourceRef:
+        kind: HelmRepository
+        name: open-telemetry
+        namespace: flux-system
+  dependsOn:
+    - name: loki
+      namespace: monitoring
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Deploy as DaemonSet to collect logs from all nodes
+    mode: daemonset
+
+    # Presets for Kubernetes metadata enrichment
+    presets:
+      logsCollection:
+        enabled: false
+      kubernetesAttributes:
+        enabled: true
+        extractAllPodLabels: false
+        extractAllPodAnnotations: false
+
+    # OpenTelemetry Collector configuration
+    config:
+      receivers:
+        filelog:
+          include:
+            - /var/log/pods/*/*/*.log
+          exclude:
+            - /var/log/pods/*/otc-container/*.log
+          start_at: end
+          include_file_path: true
+          include_file_name: false
+          operators:
+            - type: router
+              id: get-format
+              routes:
+                - output: parser-docker
+                  expr: 'body matches "^\\{"'
+                - output: parser-crio
+                  expr: 'body matches "^[^ Z]+ "'
+                - output: parser-containerd
+                  expr: 'body matches "^[^ Z]+Z"'
+            # Parse CRI-O format
+            - type: regex_parser
+              id: parser-crio
+              regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
+              output: extract-metadata-from-filepath
+              timestamp:
+                parse_from: attributes.time
+                layout_type: gotime
+                layout: '2006-01-02T15:04:05.999999999Z07:00'
+            # Parse containerd format
+            - type: regex_parser
+              id: parser-containerd
+              regex: '^(?P<time>[^ ^Z]+Z) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) ?(?P<log>.*)$'
+              output: extract-metadata-from-filepath
+              timestamp:
+                parse_from: attributes.time
+                layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+            # Parse Docker format
+            - type: json_parser
+              id: parser-docker
+              output: extract-metadata-from-filepath
+              timestamp:
+                parse_from: attributes.time
+                layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+            # Extract metadata from file path
+            - type: regex_parser
+              id: extract-metadata-from-filepath
+              regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]{36})\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
+              parse_from: attributes["log.file.path"]
+            # Move log body
+            - type: move
+              from: attributes.log
+              to: body
+            # Clean up attributes
+            - type: remove
+              field: attributes.time
+            - type: remove
+              field: attributes.logtag
+
+      processors:
+        batch:
+          timeout: 5s
+          send_batch_size: 1000
+          send_batch_max_size: 2000
+        memory_limiter:
+          check_interval: 1s
+          limit_mib: 400
+          spike_limit_mib: 100
+        resource:
+          attributes:
+            - action: insert
+              key: loki.resource.labels
+              value: k8s.namespace.name, k8s.pod.name, k8s.container.name
+
+      exporters:
+        loki:
+          endpoint: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
+          default_labels_enabled:
+            exporter: false
+            job: true
+
+      service:
+        pipelines:
+          logs:
+            receivers:
+              - filelog
+            processors:
+              - memory_limiter
+              - resource
+              - batch
+            exporters:
+              - loki
+
+    # Volume mounts for log access
+    extraVolumes:
+      - name: varlogpods
+        hostPath:
+          path: /var/log/pods
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+
+    extraVolumeMounts:
+      - name: varlogpods
+        mountPath: /var/log/pods
+        readOnly: true
+      - name: varlibdockercontainers
+        mountPath: /var/lib/docker/containers
+        readOnly: true
+
+    # Enable ServiceMonitor for Prometheus scraping
+    serviceMonitor:
+      enabled: true
+
+    # Resource limits for RPi/ARM nodes
+    resources:
+      limits:
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi

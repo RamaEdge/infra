@@ -88,6 +88,16 @@ spec:
           groups_attribute_path: groups
           role_attribute_path: contains(groups[*], 'grafana-admin') && 'Admin' || 'Viewer'
 
+      # Loki datasource for log aggregation
+      additionalDataSources:
+        - name: Loki
+          type: loki
+          uid: loki
+          access: proxy
+          url: http://loki.monitoring.svc.cluster.local:3100
+          jsonData:
+            maxLines: 1000
+
       ingress:
         enabled: true
         ingressClassName: nginx
