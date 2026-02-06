@@ -23,6 +23,9 @@ spec:
     remediation:
       retries: 3
   values:
+    image:
+      repository: otel/opentelemetry-collector-contrib
+
     # Deploy as DaemonSet to collect logs from all nodes
     mode: daemonset
 
