@@ -10,5 +10,6 @@ resources:
   - apps/opentelemetry-collector
 #  - apps/minio-operator
   - apps/actions-runner-controller
+  - apps/devpi
   # apps/minio is deployed via flux-system/minio-tenant-ks.yaml
   # which waits for minio-operator to be ready first

@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devpi-scripts
+  namespace: devpi
+data:
+  create-upload-user.sh: |
+    #!/bin/sh
+    set -e
+
+    DEVPI_URL="http://localhost:3141"
+
+    echo "Waiting for devpi-server to be ready..."
+    until wget -qO- "${DEVPI_URL}/+api" >/dev/null 2>&1; do
+      echo "  devpi-server not ready, retrying in 5s..."
+      sleep 5
+    done
+    echo "devpi-server is ready."
+
+    # Install devpi-client for user management
+    pip install --quiet devpi-client
+
+    devpi use "${DEVPI_URL}"
+    devpi login root --password=""
+
+    echo "Creating upload user..."
+    devpi user -c upload password="${DEVPI_UPLOAD_PASSWORD}" email=devpi@theedgeworks.ai || echo "User 'upload' may already exist."
+
+    echo "Creating upload/packages index..."
+    devpi index -c upload/packages bases=root/pypi || echo "Index 'upload/packages' may already exist."
+
+    echo "Done. Upload user and index are configured."

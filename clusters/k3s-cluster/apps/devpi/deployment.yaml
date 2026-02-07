@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devpi
+  namespace: devpi
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: devpi
+  template:
+    metadata:
+      labels:
+        app: devpi
+    spec:
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      initContainers:
+        - name: devpi-init
+          image: harbor.theedgeworks.ai/library/devpi:latest
+          command: ["devpi-init", "--serverdir", "/devpi/server"]
+          volumeMounts:
+            - name: devpi-data
+              mountPath: /devpi/server
+      containers:
+        - name: devpi-server
+          image: harbor.theedgeworks.ai/base/devpi:v0.2.5
+          args:
+            - "--serverdir=/devpi/server"
+            - "--host=0.0.0.0"
+            - "--port=3141"
+            - "--outside-url=https://pypi.theedgeworks.ai"
+          ports:
+            - containerPort: 3141
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /+api
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /+api
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: devpi-data
+              mountPath: /devpi/server
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: devpi-data
+          persistentVolumeClaim:
+            claimName: devpi-data
+        - name: scripts
+          configMap:
+            name: devpi-scripts
+            defaultMode: 0755
