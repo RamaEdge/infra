@@ -22,7 +22,7 @@ spec:
         - name: devpi-init
           image: harbor.theedgeworks.ai/base/devpi:v0.2.5
           imagePullPolicy: Always
-          command: ["devpi-init", "--serverdir", "/devpi/server"]
+          command: ["sh", "-c", "[ -f /devpi/server/.serverversion ] && echo 'Already initialized, skipping.' || devpi-init --serverdir /devpi/server"]
           volumeMounts:
             - name: devpi-data
               mountPath: /devpi/server
