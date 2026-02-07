@@ -37,12 +37,17 @@ spec:
         - name: devpi-server
           image: harbor.theedgeworks.ai/base/devpi:v0.2.5
           imagePullPolicy: Always
-          args:
-            - "--serverdir=/devpi/server"
-            - "--host=0.0.0.0"
-            - "--port=3141"
-            - "--outside-url=https://pypi.theedgeworks.ai"
-            - "--secretfile=/devpi/server/.secretdir/.secret"
+          command:
+            - sh
+            - -c
+            - |
+              chmod 600 /devpi/server/.secretdir/.secret
+              exec devpi-server \
+                --serverdir=/devpi/server \
+                --host=0.0.0.0 \
+                --port=3141 \
+                --outside-url=https://pypi.theedgeworks.ai \
+                --secretfile=/devpi/server/.secretdir/.secret
           ports:
             - containerPort: 3141
               name: http
