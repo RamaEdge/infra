@@ -22,20 +22,16 @@ spec:
         - name: devpi-init
           image: harbor.theedgeworks.ai/base/devpi:v0.2.5
           imagePullPolicy: Always
-          command: ["sh", "-c", "[ -f /devpi/server/.serverversion ] && echo 'Already initialized, skipping.' || devpi-init --serverdir /devpi/server"]
+          command:
+            - sh
+            - -c
+            - |
+              [ -f /devpi/server/.serverversion ] && echo 'Already initialized, skipping.' || devpi-init --serverdir /devpi/server
+              mkdir -p /devpi/server/.secretdir && chmod 700 /devpi/server/.secretdir
+              [ -f /devpi/server/.secretdir/.secret ] && echo 'Secret already exists, skipping.' || devpi-gen-secret --secretfile /devpi/server/.secretdir/.secret
           volumeMounts:
             - name: devpi-data
               mountPath: /devpi/server
-        - name: copy-secret
-          image: harbor.theedgeworks.ai/base/devpi:v0.2.5
-          imagePullPolicy: Always
-          command: ["sh", "-c", "cp /devpi/secret-src/.secret /devpi/secret/.secret && chmod 600 /devpi/secret/.secret"]
-          volumeMounts:
-            - name: devpi-secret-src
-              mountPath: /devpi/secret-src
-              readOnly: true
-            - name: devpi-secret
-              mountPath: /devpi/secret
       containers:
         - name: devpi-server
           image: harbor.theedgeworks.ai/base/devpi:v0.2.5
@@ -45,7 +41,7 @@ spec:
             - "--host=0.0.0.0"
             - "--port=3141"
             - "--outside-url=https://pypi.theedgeworks.ai"
-            - "--secretfile=/devpi/secret/.secret"
+            - "--secretfile=/devpi/server/.secretdir/.secret"
           ports:
             - containerPort: 3141
               name: http
@@ -73,8 +69,6 @@ spec:
               mountPath: /devpi/server
             - name: scripts
               mountPath: /scripts
-            - name: devpi-secret
-              mountPath: /devpi/secret
       volumes:
         - name: devpi-data
           persistentVolumeClaim:
@@ -83,11 +77,3 @@ spec:
           configMap:
             name: devpi-scripts
             defaultMode: 0755
-        - name: devpi-secret-src
-          secret:
-            secretName: devpi-secret
-            items:
-              - key: secret
-                path: .secret
-        - name: devpi-secret
-          emptyDir: {}

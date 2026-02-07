@@ -17,19 +17,7 @@ kubectl create secret tls devpi-tls \
   --key=/path/to/key.key
 ```
 
-## 2. `devpi-secret` — Server Token Signing Key
-
-Used by devpi-server (`--secretfile`) to sign login tokens. Without a persistent secret, every pod restart invalidates all `devpi login` sessions.
-
-```bash
-SECRET=$(python3 -c 'import os,base64; print(base64.b64encode(os.urandom(32)).decode())')
-
-kubectl create secret generic devpi-secret \
-  -n devpi \
-  --from-literal=secret="${SECRET}"
-```
-
-## 3. `devpi-oauth2-proxy-secret` — Keycloak OIDC Credentials
+## 2. `devpi-oauth2-proxy-secret` — Keycloak OIDC Credentials
 
 Used by the dedicated oauth2-proxy instance for Keycloak authentication on the web UI.
 
@@ -47,7 +35,7 @@ kubectl create secret generic devpi-oauth2-proxy-secret \
   --from-literal=cookie-secret="${COOKIE_SECRET}"
 ```
 
-## 4. `devpi-basic-auth` — NGINX Basic Auth for pip/twine
+## 3. `devpi-basic-auth` — NGINX Basic Auth for pip/twine
 
 Used by NGINX ingress to authenticate CLI tools (pip, twine) on API paths (`/root/`, `/upload/`, `/+api`, `/+login`).
 
