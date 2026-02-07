@@ -26,3 +26,32 @@ spec:
                 name: devpi
                 port:
                   number: 3141
+---
+# Upload path: no NGINX basic auth — devpi authenticates uploads via its own Basic auth.
+# Splitting this out is needed because NGINX basic auth strips the Authorization header,
+# preventing devpi from seeing the upload credentials.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: devpi-upload
+  namespace: devpi
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: devpi-tls
+      hosts:
+        - pypi.theedgeworks.ai
+  rules:
+    - host: pypi.theedgeworks.ai
+      http:
+        paths:
+          - path: /upload
+            pathType: Prefix
+            backend:
+              service:
+                name: devpi
+                port:
+                  number: 3141
