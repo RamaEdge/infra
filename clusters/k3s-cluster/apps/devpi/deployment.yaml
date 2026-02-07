@@ -21,6 +21,7 @@ spec:
       initContainers:
         - name: devpi-init
           image: harbor.theedgeworks.ai/base/devpi:v0.2.5
+          imagePullPolicy: Always
           command: ["devpi-init", "--serverdir", "/devpi/server"]
           volumeMounts:
             - name: devpi-data
@@ -28,6 +29,7 @@ spec:
       containers:
         - name: devpi-server
           image: harbor.theedgeworks.ai/base/devpi:v0.2.5
+          imagePullPolicy: Always
           args:
             - "--serverdir=/devpi/server"
             - "--host=0.0.0.0"
