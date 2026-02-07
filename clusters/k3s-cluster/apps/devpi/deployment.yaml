@@ -18,36 +18,22 @@ spec:
       securityContext:
         runAsUser: 1000
         fsGroup: 1000
-      initContainers:
-        - name: devpi-init
-          image: harbor.theedgeworks.ai/base/devpi:v0.2.5
-          imagePullPolicy: Always
-          command:
-            - sh
-            - -c
-            - |
-              [ -f /devpi/server/.serverversion ] && echo 'Already initialized, skipping.' || devpi-init --serverdir /devpi/server
-              mkdir -p /devpi/server/.secretdir && chmod 700 /devpi/server/.secretdir
-              [ -f /devpi/server/.secretdir/.secret ] && echo 'Secret already exists, skipping.' || devpi-gen-secret --secretfile /devpi/server/.secretdir/.secret
-              chmod 600 /devpi/server/.secretdir/.secret
-          volumeMounts:
-            - name: devpi-data
-              mountPath: /devpi/server
       containers:
         - name: devpi-server
           image: harbor.theedgeworks.ai/base/devpi:v0.2.5
           imagePullPolicy: Always
-          command:
-            - sh
-            - -c
-            - |
-              chmod 600 /devpi/server/.secretdir/.secret
-              exec devpi-server \
-                --serverdir=/devpi/server \
-                --host=0.0.0.0 \
-                --port=3141 \
-                --outside-url=https://pypi.theedgeworks.ai \
-                --secretfile=/devpi/server/.secretdir/.secret
+          env:
+            - name: DEVPI_SERVERDIR
+              value: /devpi/server
+            - name: DEVPI_OUTSIDE_URL
+              value: https://pypi.theedgeworks.ai
+            - name: DEVPI_UPLOAD_USER
+              value: upload
+            - name: DEVPI_UPLOAD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: devpi-upload-secret
+                  key: password
           ports:
             - containerPort: 3141
               name: http
@@ -73,13 +59,7 @@ spec:
           volumeMounts:
             - name: devpi-data
               mountPath: /devpi/server
-            - name: scripts
-              mountPath: /scripts
       volumes:
         - name: devpi-data
           persistentVolumeClaim:
             claimName: devpi-data
-        - name: scripts
-          configMap:
-            name: devpi-scripts
-            defaultMode: 0755
