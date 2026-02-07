@@ -20,7 +20,7 @@ spec:
         fsGroup: 1000
       initContainers:
         - name: devpi-init
-          image: harbor.theedgeworks.ai/library/devpi:latest
+          image: harbor.theedgeworks.ai/base/devpi:v0.2.5
           command: ["devpi-init", "--serverdir", "/devpi/server"]
           volumeMounts:
             - name: devpi-data
