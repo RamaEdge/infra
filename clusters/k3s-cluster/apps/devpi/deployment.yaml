@@ -35,6 +35,7 @@ spec:
             - "--host=0.0.0.0"
             - "--port=3141"
             - "--outside-url=https://pypi.theedgeworks.ai"
+            - "--secretfile=/devpi/secret/.secret"
           ports:
             - containerPort: 3141
               name: http
@@ -53,15 +54,18 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 512Mi
             limits:
               cpu: 500m
-              memory: 512Mi
+              memory: 1Gi
           volumeMounts:
             - name: devpi-data
               mountPath: /devpi/server
             - name: scripts
               mountPath: /scripts
+            - name: devpi-secret
+              mountPath: /devpi/secret
+              readOnly: true
       volumes:
         - name: devpi-data
           persistentVolumeClaim:
@@ -70,3 +74,9 @@ spec:
           configMap:
             name: devpi-scripts
             defaultMode: 0755
+        - name: devpi-secret
+          secret:
+            secretName: devpi-secret
+            items:
+              - key: secret
+                path: .secret
