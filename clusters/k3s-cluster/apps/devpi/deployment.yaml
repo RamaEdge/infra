@@ -26,6 +26,16 @@ spec:
           volumeMounts:
             - name: devpi-data
               mountPath: /devpi/server
+        - name: copy-secret
+          image: harbor.theedgeworks.ai/base/devpi:v0.2.5
+          imagePullPolicy: Always
+          command: ["sh", "-c", "cp /devpi/secret-src/.secret /devpi/secret/.secret && chmod 600 /devpi/secret/.secret"]
+          volumeMounts:
+            - name: devpi-secret-src
+              mountPath: /devpi/secret-src
+              readOnly: true
+            - name: devpi-secret
+              mountPath: /devpi/secret
       containers:
         - name: devpi-server
           image: harbor.theedgeworks.ai/base/devpi:v0.2.5
@@ -65,7 +75,6 @@ spec:
               mountPath: /scripts
             - name: devpi-secret
               mountPath: /devpi/secret
-              readOnly: true
       volumes:
         - name: devpi-data
           persistentVolumeClaim:
@@ -74,10 +83,11 @@ spec:
           configMap:
             name: devpi-scripts
             defaultMode: 0755
-        - name: devpi-secret
+        - name: devpi-secret-src
           secret:
             secretName: devpi-secret
-            defaultMode: 0600
             items:
               - key: secret
                 path: .secret
+        - name: devpi-secret
+          emptyDir: {}
