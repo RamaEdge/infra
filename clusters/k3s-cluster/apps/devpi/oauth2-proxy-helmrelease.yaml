@@ -23,6 +23,7 @@ spec:
         namespace: flux-system
   values:
     config:
+      existingSecret: devpi-oauth2-proxy-secret
       clientID: theedgeworks
       cookieName: "_oauth2_proxy_devpi"
       configFile: |-
@@ -42,7 +43,6 @@ spec:
         skip_auth_routes = ["^/ping$"]
         silence_ping_logging = true
         ssl_insecure_skip_verify = true
-    existingSecret: devpi-oauth2-proxy-secret
     sessionStorage:
       type: cookie
     resources:
