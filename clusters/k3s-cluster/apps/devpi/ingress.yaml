@@ -27,9 +27,9 @@ spec:
                 port:
                   number: 3141
 ---
-# Upload path: no NGINX basic auth — devpi authenticates uploads via its own Basic auth.
-# Splitting this out is needed because NGINX basic auth strips the Authorization header,
-# preventing devpi from seeing the upload credentials.
+# Paths that bypass NGINX basic auth:
+# - /upload: devpi authenticates uploads via its own Basic auth (NGINX strips the header otherwise)
+# - /root: PyPI mirror cache — public packages that pip needs to download without auth prompts
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -49,6 +49,13 @@ spec:
       http:
         paths:
           - path: /upload
+            pathType: Prefix
+            backend:
+              service:
+                name: devpi
+                port:
+                  number: 3141
+          - path: /root
             pathType: Prefix
             backend:
               service:
