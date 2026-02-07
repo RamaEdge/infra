@@ -24,7 +24,7 @@ spec:
   values:
     runnerScaleSetName: modbus-runner-set
     # GitHub configuration
-    githubConfigUrl: "https://github.com/ramaedge/modbus-adapter"
+    githubConfigUrl: "https://github.com/ramaedge"
     # Reference to pre-existing secret in arc-runners namespace
     # Secret must have key: github_token
     githubConfigSecret: arc-runner-set-secret
