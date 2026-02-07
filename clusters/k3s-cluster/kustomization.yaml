@@ -8,7 +8,6 @@ resources:
   - apps/kube-prometheus-stack
   - apps/loki
   - apps/opentelemetry-collector
-#  - apps/minio-operator
   - apps/actions-runner-controller
   - apps/devpi
   # apps/minio is deployed via flux-system/minio-tenant-ks.yaml

@@ -36,14 +36,14 @@ spec:
                 port:
                   number: 3141
           - path: /+api
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: devpi
                 port:
                   number: 3141
           - path: /+login
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: devpi
