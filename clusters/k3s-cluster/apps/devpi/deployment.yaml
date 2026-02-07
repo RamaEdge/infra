@@ -29,6 +29,7 @@ spec:
               [ -f /devpi/server/.serverversion ] && echo 'Already initialized, skipping.' || devpi-init --serverdir /devpi/server
               mkdir -p /devpi/server/.secretdir && chmod 700 /devpi/server/.secretdir
               [ -f /devpi/server/.secretdir/.secret ] && echo 'Secret already exists, skipping.' || devpi-gen-secret --secretfile /devpi/server/.secretdir/.secret
+              chmod 600 /devpi/server/.secretdir/.secret
           volumeMounts:
             - name: devpi-data
               mountPath: /devpi/server
