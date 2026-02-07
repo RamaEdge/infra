@@ -43,6 +43,9 @@ spec:
         skip_auth_routes = ["^/ping$"]
         silence_ping_logging = true
         ssl_insecure_skip_verify = true
+        whitelist_domains = [".theedgeworks.ai"]
+        oidc_audience_claims = ["aud", "azp"]
+        allowed_audiences = ["theedgeworks", "account"]
     sessionStorage:
       type: cookie
     resources:
