@@ -12,4 +12,3 @@ resources:
 #  - minio-helmrepository.yaml
 #  - minio-tenant-ks.yaml
   - arc-helm.yaml
-  - oauth2-proxy-helmrepository.yaml

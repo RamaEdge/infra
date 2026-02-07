@@ -17,27 +17,9 @@ kubectl create secret tls devpi-tls \
   --key=/path/to/key.key
 ```
 
-## 2. `devpi-oauth2-proxy-secret` — Keycloak OIDC Credentials
+## 2. `devpi-basic-auth` — NGINX Basic Auth
 
-Used by the dedicated oauth2-proxy instance for Keycloak authentication on the web UI.
-
-- `client-id`: Keycloak client ID (`theedgeworks`)
-- `client-secret`: Keycloak client secret (from Keycloak admin console → Clients → `theedgeworks` → Credentials)
-- `cookie-secret`: Random secret for encrypting oauth2-proxy session cookies
-
-```bash
-COOKIE_SECRET=$(python3 -c 'import os,base64; print(base64.b64encode(os.urandom(32)).decode())')
-
-kubectl create secret generic devpi-oauth2-proxy-secret \
-  -n devpi \
-  --from-literal=client-id=theedgeworks \
-  --from-literal=client-secret=<CLIENT_SECRET_FROM_KEYCLOAK> \
-  --from-literal=cookie-secret="${COOKIE_SECRET}"
-```
-
-## 3. `devpi-basic-auth` — NGINX Basic Auth for pip/twine
-
-Used by NGINX ingress to authenticate CLI tools (pip, twine) on API paths (`/root/`, `/upload/`, `/+api`, `/+login`).
+Used by NGINX ingress to authenticate all requests (web UI, pip, twine) on all paths.
 
 ```bash
 htpasswd -Bbn pypi-user <STRONG_PASSWORD> > /tmp/auth
@@ -48,10 +30,3 @@ kubectl create secret generic devpi-basic-auth \
 
 rm /tmp/auth
 ```
-
-## Keycloak Configuration
-
-In addition to the secrets above, update the Keycloak `theedgeworks` client:
-
-1. Add `https://pypi.theedgeworks.ai/oauth2/callback` to **Valid Redirect URIs**
-2. Add `https://pypi.theedgeworks.ai` to **Web Origins**
