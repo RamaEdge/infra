@@ -10,3 +10,4 @@ resources:
   - code-quality-runner-helmrelease.yaml
   - modbus-runner-set.yaml
   - opcua-runner-set.yaml
+  - claude-scale-set-helmrelease.yaml
