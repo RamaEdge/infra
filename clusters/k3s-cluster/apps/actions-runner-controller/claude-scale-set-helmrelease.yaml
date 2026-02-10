@@ -41,6 +41,7 @@ spec:
         containers:
           - name: runner
             image: harbor.theedgeworks.ai/base/actions-runner-claude:v0.3.6
+            imagePullPolicy: Always
             command: ["/home/runner/run.sh"]
             resources:
               requests:
