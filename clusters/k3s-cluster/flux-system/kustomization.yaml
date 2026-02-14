@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - harbor-helmrepository.yaml
+  - forgejo-helmrepository.yaml
   - prometheus-community-helmrepository.yaml
   - bitnami-helmrepository.yaml
   - codecentric-helmrepository.yaml
