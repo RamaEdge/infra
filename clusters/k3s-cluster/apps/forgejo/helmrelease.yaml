@@ -36,7 +36,7 @@ spec:
       annotations:
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
       hosts:
-        - host: forgejo.theedgeworks.ai
+        - host: code.theedgeworks.ai
           paths:
             - path: /
               pathType: Prefix
@@ -44,7 +44,7 @@ spec:
       tls:
         - secretName: forgejo-tls
           hosts:
-            - forgejo.theedgeworks.ai
+            - code.theedgeworks.ai
 
     gitea:
       admin:
