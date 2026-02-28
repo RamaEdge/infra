@@ -38,7 +38,7 @@ spec:
 
     persistence:
       enabled: true
-      storageClass: longhorn
+      storageClass: longhorn-replicated
       size: 200Gi
 
     ingress:
