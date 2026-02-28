@@ -18,9 +18,9 @@
 
 ### Workload Scheduling
 
-- [ ] **SCHED-01**: Stateful workloads (databases, Forgejo, Harbor) have nodeAffinity targeting appropriate node roles
+- [x] **SCHED-01**: Stateful workloads (databases, Forgejo, Harbor) have nodeAffinity targeting appropriate node roles
 - [ ] **SCHED-02**: PostgreSQL instances have pod anti-affinity to prevent co-location on same node
-- [ ] **SCHED-03**: Application pods have topologySpreadConstraints to spread across nodes
+- [x] **SCHED-03**: Application pods have topologySpreadConstraints to spread across nodes
 
 ### Replicated Storage
 
@@ -63,9 +63,9 @@
 | NODE-03 | Phase 1 | Pending |
 | RNRS-01 | Phase 2 | Pending |
 | RNRS-02 | Phase 2 | Pending |
-| SCHED-01 | Phase 2 | Pending |
+| SCHED-01 | Phase 2 | Complete |
 | SCHED-02 | Phase 2 | Pending |
-| SCHED-03 | Phase 2 | Pending |
+| SCHED-03 | Phase 2 | Complete |
 | STOR-01 | Phase 3 | Pending |
 | STOR-02 | Phase 3 | Pending |
 | STOR-03 | Phase 3 | Pending |

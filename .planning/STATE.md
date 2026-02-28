@@ -1,3 +1,16 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+last_updated: "2026-02-28T15:14:07.559Z"
+progress:
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 8
+  completed_plans: 3
+---
+
 # Project State
 
 ## Project Reference
@@ -34,6 +47,9 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 02-scheduling-constraints P03 | 1 | 2 tasks | 2 files |
+| Phase 02-scheduling-constraints P04 | 1 | 1 tasks | 1 files |
+| Phase 02-scheduling-constraints P02 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -47,6 +63,10 @@ Recent decisions affecting current work:
 - Script + docs for labeling — reproducible without putting imperative commands in GitOps repo
 - `longhorn-replicated` as new StorageClass — preserves default for non-critical workloads, explicit opt-in
 - New deploys only, no data migration — PVCs are for fresh deployments
+- [Phase 02-scheduling-constraints]: Forgejo topologySpreadConstraints uses ScheduleAnyway (single-replica; hard constraint risks unschedulability)
+- [Phase 02-scheduling-constraints]: Keycloak uses nodeSelector only — keycloakx chart renders affinity via tpl (Go template), overriding it replaces default podAntiAffinity
+- [Phase 02-scheduling-constraints]: topologySpreadConstraints omitted for Harbor: all components run at replica=1, spread provides no benefit
+- [Phase 02-scheduling-constraints]: Harbor nodeSelector set per-component at chart root level, not top-level; database.internal is nested one level deeper
 
 ### Pending Todos
 
