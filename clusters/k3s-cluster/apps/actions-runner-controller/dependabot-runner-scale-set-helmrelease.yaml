@@ -34,6 +34,15 @@ spec:
     # when containerMode.type: dind is set (see GitHub Issue #3281)
     template:
       spec:
+        nodeSelector:
+          node-role: runners
+        topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: dependabot
         dnsPolicy: "None"
         dnsConfig:
           nameservers:

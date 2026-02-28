@@ -36,6 +36,15 @@ spec:
     # Runner pod template
     template:
       spec:
+        nodeSelector:
+          node-role: runners
+        topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: modbus-runner-set
         securityContext:
           fsGroup: 1001
         containers:
