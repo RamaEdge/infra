@@ -7,8 +7,8 @@
 
 ### Runner Scheduling
 
-- [ ] **RNRS-01**: All 7 ARC runner scale sets have topologySpreadConstraints with key `kubernetes.io/hostname`
-- [ ] **RNRS-02**: Runner scale sets have nodeSelector pinning runners to nodes labeled `role=runners`
+- [x] **RNRS-01**: All 7 ARC runner scale sets have topologySpreadConstraints with key `kubernetes.io/hostname`
+- [x] **RNRS-02**: Runner scale sets have nodeSelector pinning runners to nodes labeled `role=runners`
 
 ### Node Labeling
 
@@ -61,8 +61,8 @@
 | NODE-01 | Phase 1 | Pending |
 | NODE-02 | Phase 1 | Pending |
 | NODE-03 | Phase 1 | Pending |
-| RNRS-01 | Phase 2 | Pending |
-| RNRS-02 | Phase 2 | Pending |
+| RNRS-01 | Phase 2 | Complete |
+| RNRS-02 | Phase 2 | Complete |
 | SCHED-01 | Phase 2 | Complete |
 | SCHED-02 | Phase 2 | Complete |
 | SCHED-03 | Phase 2 | Complete |

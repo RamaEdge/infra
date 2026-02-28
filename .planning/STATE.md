@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-02-28T15:14:14.388Z"
+last_updated: "2026-02-28T15:12:42Z"
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 8
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -18,16 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-28)
 
 **Core value:** Critical stateful data survives node failures through replicated storage; workloads distributed evenly across nodes
-**Current focus:** Phase 1 - Node Labeling
+**Current focus:** Phase 2 - Scheduling Constraints
 
 ## Current Position
 
-Phase: 1 of 3 (Node Labeling)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-28 — Roadmap created
+Phase: 2 of 3 (Scheduling Constraints)
+Plan: 1 of 4 completed in current phase
+Status: In progress
+Last activity: 2026-02-28 — 02-01 runner scheduling constraints complete
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 50%
 
 ## Performance Metrics
 
@@ -70,6 +70,10 @@ Recent decisions affecting current work:
 - [Phase 02-scheduling-constraints]: Used Bitnami nodeAffinityPreset (not raw affinity block) — preset is silently ignored when primary.affinity is also set
 - [Phase 02-scheduling-constraints]: forgejo-db targets apps node role; keycloak-db targets infra node role — consistent with Phase 1 node role assignments
 - [Phase 02-scheduling-constraints]: podAntiAffinityPreset: hard set on both PostgreSQL HelmReleases — no effect at replica=1 but correctly documents co-location prevention intent
+- [Phase 02-01]: node-role (not role) used as label key for runner nodeSelector — consistent with Phase 1 decision
+- [Phase 02-01]: whenUnsatisfiable: ScheduleAnyway for runner topologySpreadConstraints — runners scale to zero; DoNotSchedule would leave pods Pending on single-node pool
+- [Phase 02-01]: labelSelector.matchLabels.app.kubernetes.io/name matches runnerScaleSetName per file — chart-applied label for correct topology tracking
+- [Phase 02-01]: 6 runner sets updated (not 7) — operator HelmRelease excluded from scheduling constraints
 
 ### Pending Todos
 
@@ -83,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Roadmap created, no phases planned yet
+Stopped at: Completed 02-01-PLAN.md (runner scheduling constraints for all 6 ARC runner scale sets)
 Resume file: None

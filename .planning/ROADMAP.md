@@ -13,7 +13,7 @@ Three phases transform the cluster from single-point-of-failure to fault-toleran
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Node Labeling** - Define node roles and produce the imperative script to apply labels
-- [ ] **Phase 2: Scheduling Constraints** - Spread ARC runners and stateful workloads across nodes using node roles
+- [x] **Phase 2: Scheduling Constraints** - Spread ARC runners and stateful workloads across nodes using node roles (completed 2026-02-28)
 - [ ] **Phase 3: Replicated Storage** - Create longhorn-replicated StorageClass and switch all critical PVCs to it
 
 ## Phase Details
@@ -58,5 +58,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Node Labeling | 0/TBD | Not started | - |
-| 2. Scheduling Constraints | 3/4 | In Progress|  |
+| 2. Scheduling Constraints | 4/4 | Complete   | 2026-02-28 |
 | 3. Replicated Storage | 0/TBD | Not started | - |
