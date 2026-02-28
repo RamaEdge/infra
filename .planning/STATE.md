@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-02-28T15:19:02.266Z"
+last_updated: "2026-02-28T15:30:22.887Z"
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 8
-  completed_plans: 4
+  completed_plans: 6
 ---
 
 # Project State
@@ -50,6 +50,8 @@ Progress: [█░░░░░░░░░] 50%
 | Phase 02-scheduling-constraints P03 | 1 | 2 tasks | 2 files |
 | Phase 02-scheduling-constraints P04 | 1 | 1 tasks | 1 files |
 | Phase 02-scheduling-constraints P02 | 3 | 2 tasks | 2 files |
+| Phase 03-replicated-storage P02 | 5 | 2 tasks | 2 files |
+| Phase 03-replicated-storage P03 | 5 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -74,6 +76,9 @@ Recent decisions affecting current work:
 - [Phase 02-01]: whenUnsatisfiable: ScheduleAnyway for runner topologySpreadConstraints — runners scale to zero; DoNotSchedule would leave pods Pending on single-node pool
 - [Phase 02-01]: labelSelector.matchLabels.app.kubernetes.io/name matches runnerScaleSetName per file — chart-applied label for correct topology tracking
 - [Phase 02-01]: 6 runner sets updated (not 7) — operator HelmRelease excluded from scheduling constraints
+- [Phase 03-replicated-storage]: Only Harbor database PVC uses longhorn-replicated; registry/jobservice/trivy remain on default longhorn — balances fault-tolerance with storage efficiency
+- [Phase 03-replicated-storage]: Harbor database storageClass configured in main harbor HelmRelease under persistence.persistentVolumeClaim.database (not a separate PostgreSQL HelmRelease)
+- [Phase 03-replicated-storage]: Changed only storageClass field in each HelmRelease — no other content modified; postgres-helmrelease uses primary.persistence.storageClass (Bitnami chart path)
 
 ### Pending Todos
 

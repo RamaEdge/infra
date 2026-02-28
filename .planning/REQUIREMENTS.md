@@ -25,10 +25,10 @@
 ### Replicated Storage
 
 - [ ] **STOR-01**: longhorn-replicated StorageClass defined with replica count 2+
-- [ ] **STOR-02**: Forgejo app data PVC (200Gi) uses longhorn-replicated
-- [ ] **STOR-03**: Forgejo PostgreSQL PVC (1Gi) uses longhorn-replicated
-- [ ] **STOR-04**: Keycloak PostgreSQL PVC (1Gi) uses longhorn-replicated
-- [ ] **STOR-05**: Harbor PostgreSQL PVC (1Gi) uses longhorn-replicated
+- [x] **STOR-02**: Forgejo app data PVC (200Gi) uses longhorn-replicated
+- [x] **STOR-03**: Forgejo PostgreSQL PVC (1Gi) uses longhorn-replicated
+- [x] **STOR-04**: Keycloak PostgreSQL PVC (1Gi) uses longhorn-replicated
+- [x] **STOR-05**: Harbor PostgreSQL PVC (1Gi) uses longhorn-replicated
 - [ ] **STOR-06**: Smedja PostgreSQL PVC (10Gi) uses longhorn-replicated
 
 ## v2 Requirements
@@ -67,10 +67,10 @@
 | SCHED-02 | Phase 2 | Complete |
 | SCHED-03 | Phase 2 | Complete |
 | STOR-01 | Phase 3 | Pending |
-| STOR-02 | Phase 3 | Pending |
-| STOR-03 | Phase 3 | Pending |
-| STOR-04 | Phase 3 | Pending |
-| STOR-05 | Phase 3 | Pending |
+| STOR-02 | Phase 3 | Complete |
+| STOR-03 | Phase 3 | Complete |
+| STOR-04 | Phase 3 | Complete |
+| STOR-05 | Phase 3 | Complete |
 | STOR-06 | Phase 3 | Pending |
 
 **Coverage:**
