@@ -45,12 +45,24 @@ Critical stateful data (git repos, databases) survives node failures through rep
 ## Context
 
 - Cluster runs k3s on ARM64 nodes (4-6 nodes)
-- All deployments managed via Flux CD HelmReleases in this repo
+- **Two-repo architecture:**
+  - `infra-core` (`/Users/ravichillerega/sources/core/infra-core`) — Cluster foundation: Longhorn, MetalLB, Flux, StorageClasses, node config
+  - `infra` (`/Users/ravichillerega/sources/core/infra`) — Applications on top: Forgejo, Harbor, Keycloak, ARC runners, monitoring
+- All deployments managed via Flux CD HelmReleases
 - Longhorn provides distributed block storage but currently uses default (likely single-replica) storage class
 - ARC runners currently have no topology constraints, may pile onto a single node
 - Stateful workloads (databases, git repos) have no scheduling preferences, may co-locate on one node
 - Node labeling is imperative (done on cluster, not in this repo) — repo changes reference labels
 - PVCs are for new deployments, no data migration needed
+
+### Repo Split
+
+| Work Item | Target Repo |
+|-----------|-------------|
+| Phase 1: Node labeling tooling (scripts, docs) | `infra-core` — handled manually |
+| Phase 3 Plan 01: `longhorn-replicated` StorageClass | `infra-core` — handled manually |
+| Phase 2: All scheduling constraints | `infra` — automated via GSD |
+| Phase 3 Plans 02-04: PVC changes | `infra` — automated via GSD |
 
 ## Constraints
 

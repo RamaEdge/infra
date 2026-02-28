@@ -12,9 +12,14 @@ files_modified:
   - scripts/apply-node-labels.sh
   - docs/node-labeling.md
 autonomous: true
+target_repo: infra-core
+target_repo_path: /Users/ravichillerega/sources/core/infra-core
+manual: true
 ---
 
 # Plan: Node Labeling Tooling
+
+> **REPO NOTE:** This plan targets the `infra-core` repo at `/Users/ravichillerega/sources/core/infra-core`, NOT the `infra` repo. Node labeling tooling is cluster-foundation work. These changes will be applied manually by the operator.
 
 ## Objective
 
