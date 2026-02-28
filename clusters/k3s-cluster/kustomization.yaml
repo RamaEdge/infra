@@ -11,5 +11,6 @@ resources:
   - apps/actions-runner-controller
   - apps/devpi
   - apps/forgejo
+  - apps/smedja
   # apps/minio is deployed via flux-system/minio-tenant-ks.yaml
   # which waits for minio-operator to be ready first
