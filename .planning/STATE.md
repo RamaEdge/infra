@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-02-28T15:30:22.887Z"
+last_updated: "2026-02-28T15:31:00Z"
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -52,6 +52,7 @@ Progress: [█░░░░░░░░░] 50%
 | Phase 02-scheduling-constraints P02 | 3 | 2 tasks | 2 files |
 | Phase 03-replicated-storage P02 | 5 | 2 tasks | 2 files |
 | Phase 03-replicated-storage P03 | 5 | 2 tasks | 2 files |
+| Phase 03-replicated-storage P04 | 1 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 03-replicated-storage]: Only Harbor database PVC uses longhorn-replicated; registry/jobservice/trivy remain on default longhorn — balances fault-tolerance with storage efficiency
 - [Phase 03-replicated-storage]: Harbor database storageClass configured in main harbor HelmRelease under persistence.persistentVolumeClaim.database (not a separate PostgreSQL HelmRelease)
 - [Phase 03-replicated-storage]: Changed only storageClass field in each HelmRelease — no other content modified; postgres-helmrelease uses primary.persistence.storageClass (Bitnami chart path)
+- [Phase 03-04]: smedja-db kustomization omits helmrelease.yaml — Smedja app not yet deployed; only postgres HelmRelease registered
+- [Phase 03-04]: longhorn-replicated StorageClass is in infra-core repo (apps/longhorn/storageclasses.yaml), not infra repo — no apps/longhorn-config needed in infra kustomization
 
 ### Pending Todos
 
@@ -92,5 +95,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 02-01-PLAN.md (runner scheduling constraints for all 6 ARC runner scale sets)
+Stopped at: Completed 03-04-PLAN.md (Smedja PostgreSQL infrastructure with longhorn-replicated 10Gi PVC)
 Resume file: None

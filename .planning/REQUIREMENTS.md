@@ -29,7 +29,7 @@
 - [x] **STOR-03**: Forgejo PostgreSQL PVC (1Gi) uses longhorn-replicated
 - [x] **STOR-04**: Keycloak PostgreSQL PVC (1Gi) uses longhorn-replicated
 - [x] **STOR-05**: Harbor PostgreSQL PVC (1Gi) uses longhorn-replicated
-- [ ] **STOR-06**: Smedja PostgreSQL PVC (10Gi) uses longhorn-replicated
+- [x] **STOR-06**: Smedja PostgreSQL PVC (10Gi) uses longhorn-replicated
 
 ## v2 Requirements
 
@@ -71,7 +71,7 @@
 | STOR-03 | Phase 3 | Complete |
 | STOR-04 | Phase 3 | Complete |
 | STOR-05 | Phase 3 | Complete |
-| STOR-06 | Phase 3 | Pending |
+| STOR-06 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 14 total
