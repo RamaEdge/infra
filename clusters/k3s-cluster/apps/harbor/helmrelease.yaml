@@ -136,7 +136,7 @@ spec:
         database:
           size: 1Gi
           accessMode: ReadWriteOnce
-          storageClass: longhorn
+          storageClass: longhorn-replicated
       imageChartStorage:
         type: filesystem
         filesystem:
