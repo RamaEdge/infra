@@ -25,6 +25,17 @@ spec:
         name: forgejo
         namespace: flux-system
   values:
+    nodeSelector:
+      node-role: apps
+
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: forgejo
+
     persistence:
       enabled: true
       storageClass: longhorn
