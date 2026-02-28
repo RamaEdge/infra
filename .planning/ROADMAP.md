@@ -58,5 +58,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Node Labeling | 0/TBD | Not started | - |
-| 2. Scheduling Constraints | 0/TBD | Not started | - |
+| 2. Scheduling Constraints | 3/4 | In Progress|  |
 | 3. Replicated Storage | 0/TBD | Not started | - |
