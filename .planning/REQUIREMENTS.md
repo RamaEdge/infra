@@ -58,26 +58,26 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RNRS-01 | — | Pending |
-| RNRS-02 | — | Pending |
-| NODE-01 | — | Pending |
-| NODE-02 | — | Pending |
-| NODE-03 | — | Pending |
-| SCHED-01 | — | Pending |
-| SCHED-02 | — | Pending |
-| SCHED-03 | — | Pending |
-| STOR-01 | — | Pending |
-| STOR-02 | — | Pending |
-| STOR-03 | — | Pending |
-| STOR-04 | — | Pending |
-| STOR-05 | — | Pending |
-| STOR-06 | — | Pending |
+| NODE-01 | Phase 1 | Pending |
+| NODE-02 | Phase 1 | Pending |
+| NODE-03 | Phase 1 | Pending |
+| RNRS-01 | Phase 2 | Pending |
+| RNRS-02 | Phase 2 | Pending |
+| SCHED-01 | Phase 2 | Pending |
+| SCHED-02 | Phase 2 | Pending |
+| SCHED-03 | Phase 2 | Pending |
+| STOR-01 | Phase 3 | Pending |
+| STOR-02 | Phase 3 | Pending |
+| STOR-03 | Phase 3 | Pending |
+| STOR-04 | Phase 3 | Pending |
+| STOR-05 | Phase 3 | Pending |
+| STOR-06 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14
+- Mapped to phases: 14
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-28*
-*Last updated: 2026-02-28 after initial definition*
+*Last updated: 2026-02-28 after roadmap creation*
