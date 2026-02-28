@@ -42,7 +42,7 @@ spec:
       podAntiAffinityPreset: hard
       persistence:
         enabled: true
-        storageClass: longhorn
+        storageClass: longhorn-replicated
         size: 1Gi
       resources:
         requests:
