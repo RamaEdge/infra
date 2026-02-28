@@ -25,6 +25,9 @@ spec:
         name: codecentric
         namespace: flux-system
   values:
+    nodeSelector:
+      node-role: infra
+
     # Keycloak startup command
     command:
       - "/opt/keycloak/bin/kc.sh"
