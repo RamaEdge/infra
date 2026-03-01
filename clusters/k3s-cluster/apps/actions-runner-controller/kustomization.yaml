@@ -11,3 +11,4 @@ resources:
   - modbus-runner-set.yaml
   - opcua-runner-set.yaml
   - claude-scale-set-helmrelease.yaml
+  - os-builder-runner-set.yaml

@@ -1,0 +1,81 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: os-builder-runner-set
+  namespace: flux-system
+spec:
+  interval: 5m
+  targetNamespace: arc-runners
+  chart:
+    spec:
+      chart: gha-runner-scale-set
+      version: 0.13.1
+      sourceRef:
+        kind: HelmRepository
+        name: actions-runner-controller
+        namespace: flux-system
+  install:
+    createNamespace: false
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    runnerScaleSetName: os-builder-runner-set
+    # GitHub configuration
+    githubConfigUrl: "https://github.com/ramaedge"
+    # Reference to pre-existing secret in arc-runners namespace
+    # Secret must have key: github_token
+    githubConfigSecret: arc-runner-set-secret
+
+    # Auto-scaling configuration — fewer runners, these are heavy builds
+    minRunners: 0
+    maxRunners: 3
+
+    # Runner pod template
+    template:
+      spec:
+        nodeSelector:
+          node-role: runners
+        topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: ScheduleAnyway
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: os-builder-runner-set
+        securityContext:
+          fsGroup: 1001
+        containers:
+          - name: runner
+            image: harbor.theedgeworks.ai/base/actions-runner:v0.1.5
+            command: ["/home/runner/run.sh"]
+            # Higher resources — bootc image builds with embedded container
+            # images are CPU and memory intensive (skopeo pulls ~30 images
+            # during podman build, podman compresses layers)
+            resources:
+              requests:
+                cpu: "2"
+                memory: "4Gi"
+              limits:
+                cpu: "4"
+                memory: "8Gi"
+            volumeMounts:
+              - name: work
+                mountPath: /home/runner/_work
+
+        # Large ephemeral storage — embed-microshift-images.sh pulls ~30
+        # container images into the build layer during podman build.
+        # The standard 5Gi workspace is insufficient for bootc builds.
+        volumes:
+          - name: work
+            ephemeral:
+              volumeClaimTemplate:
+                spec:
+                  accessModes:
+                    - ReadWriteOnce
+                  storageClassName: longhorn
+                  resources:
+                    requests:
+                      storage: 40Gi
