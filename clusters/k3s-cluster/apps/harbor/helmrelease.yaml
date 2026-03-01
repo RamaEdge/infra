@@ -83,8 +83,6 @@ spec:
     database:
       type: internal
       internal:
-        nodeSelector:
-          node-role.apps: "true"
         image:
           repository: ghcr.io/octohelm/harbor/harbor-db
           tag: v2.14.0

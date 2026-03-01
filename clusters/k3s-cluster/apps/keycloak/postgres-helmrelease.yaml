@@ -34,11 +34,6 @@ spec:
             adminPasswordKey: postgres-password
             userPasswordKey: password
     primary:
-      nodeAffinityPreset:
-        type: "hard"
-        key: "node-role.infra"
-        values:
-          - "true"
       podAntiAffinityPreset: hard
       persistence:
         enabled: true
