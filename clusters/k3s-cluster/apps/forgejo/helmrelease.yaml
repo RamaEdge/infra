@@ -26,7 +26,7 @@ spec:
         namespace: flux-system
   values:
     nodeSelector:
-      node-role: apps
+      node-role.apps: "true"
 
     topologySpreadConstraints:
       - maxSkew: 1

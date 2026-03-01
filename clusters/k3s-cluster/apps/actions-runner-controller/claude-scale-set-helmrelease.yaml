@@ -37,7 +37,7 @@ spec:
     template:
       spec:
         nodeSelector:
-          node-role: runners
+          node-role.runners: "true"
         topologySpreadConstraints:
           - maxSkew: 1
             topologyKey: kubernetes.io/hostname

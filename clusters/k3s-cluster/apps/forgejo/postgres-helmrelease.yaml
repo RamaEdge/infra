@@ -36,9 +36,9 @@ spec:
     primary:
       nodeAffinityPreset:
         type: "hard"
-        key: "node-role"
+        key: "node-role.apps"
         values:
-          - apps
+          - "true"
       podAntiAffinityPreset: hard
       persistence:
         enabled: true

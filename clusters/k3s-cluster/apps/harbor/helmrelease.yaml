@@ -29,20 +29,20 @@ spec:
     # Using octohelm/harbor images from GHCR which support ARM64
     core:
       nodeSelector:
-        node-role: apps
+        node-role.apps: "true"
       image:
         repository: ghcr.io/octohelm/harbor/harbor-core
         tag: v2.14.0
 
     portal:
       nodeSelector:
-        node-role: apps
+        node-role.apps: "true"
       image:
         repository: ghcr.io/octohelm/harbor/harbor-portal
         tag: v2.14.0
     jobservice:
       nodeSelector:
-        node-role: apps
+        node-role.apps: "true"
       image:
         repository: ghcr.io/octohelm/harbor/harbor-jobservice
         tag: v2.14.0
@@ -54,7 +54,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
     registry:
       nodeSelector:
-        node-role: apps
+        node-role.apps: "true"
       registry:
         image:
           repository: ghcr.io/octohelm/harbor/registry-photon
@@ -75,7 +75,7 @@ spec:
           tag: v2.14.0
     nginx:
       nodeSelector:
-        node-role: apps
+        node-role.apps: "true"
       image:
         repository: ghcr.io/octohelm/harbor/nginx-photon
         tag: v2.14.0
@@ -84,7 +84,7 @@ spec:
       type: internal
       internal:
         nodeSelector:
-          node-role: apps
+          node-role.apps: "true"
         image:
           repository: ghcr.io/octohelm/harbor/harbor-db
           tag: v2.14.0
@@ -102,7 +102,7 @@ spec:
         addr: redis-service.harbor.svc.cluster.local:6379
     exporter:
       nodeSelector:
-        node-role: apps
+        node-role.apps: "true"
       image:
         repository: ghcr.io/octohelm/harbor/harbor-exporter
         tag: v2.14.0
@@ -169,7 +169,7 @@ spec:
 
     trivy:
       nodeSelector:
-        node-role: apps
+        node-role.apps: "true"
       enabled: true
       image:
         repository: ghcr.io/octohelm/harbor/trivy-adapter-photon

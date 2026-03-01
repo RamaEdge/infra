@@ -26,7 +26,7 @@ spec:
         namespace: flux-system
   values:
     nodeSelector:
-      node-role: infra
+      node-role.infra: "true"
 
     # Keycloak startup command
     command:
