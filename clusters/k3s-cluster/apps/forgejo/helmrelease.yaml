@@ -46,6 +46,12 @@ spec:
       className: nginx
       annotations:
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/proxy-body-size: "11g"
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+        nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+        nginx.ingress.kubernetes.io/limit-connections: "10"
+        nginx.ingress.kubernetes.io/limit-rps: "20"
       hosts:
         - host: code.theedgeworks.ai
           paths:
@@ -72,6 +78,18 @@ spec:
           ROOT_URL: https://code.theedgeworks.ai
           DOMAIN: code.theedgeworks.ai
           SSH_DOMAIN: code.theedgeworks.ai
+          LFS_START_SERVER: "true"
+        lfs:
+          STORAGE_TYPE: local
+          MAX_FILE_SIZE: "10737418240"
+        attachment:
+          MAX_SIZE: "10240"
+          MAX_FILES: "10"
+        repository:
+          MAX_CREATION_LIMIT: "-1"
+        packages:
+          ENABLED: "true"
+          MAX_SIZE_RPM: "10737418240"
 
       additionalConfigFromEnvs:
         - name: FORGEJO__DATABASE__PASSWD
@@ -88,8 +106,8 @@ spec:
 
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
+        cpu: 250m
         memory: 512Mi
+      limits:
+        cpu: "2"
+        memory: 2Gi
