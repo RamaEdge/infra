@@ -6,9 +6,7 @@ resources:
   - runner-namespace.yaml
   - operator-helmrelease.yaml
   - runner-scale-set-helmrelease.yaml
-  - dependabot-runner-scale-set-helmrelease.yaml
   - code-quality-runner-helmrelease.yaml
   - modbus-runner-set.yaml
   - opcua-runner-set.yaml
-  - claude-scale-set-helmrelease.yaml
   - os-builder-runner-set.yaml
