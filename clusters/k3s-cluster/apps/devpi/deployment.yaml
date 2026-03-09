@@ -15,12 +15,14 @@ spec:
       labels:
         app: devpi
     spec:
+      nodeSelector:
+        node-role.apps: "true"
       securityContext:
         runAsUser: 1000
         fsGroup: 1000
       containers:
         - name: devpi-server
-          image: harbor.theedgeworks.ai/base/devpi:v0.2.7
+          image: harbor.theedgeworks.ai/base/devpi:v0.4.0
           imagePullPolicy: Always
           env:
             - name: DEVPI_SERVERDIR
