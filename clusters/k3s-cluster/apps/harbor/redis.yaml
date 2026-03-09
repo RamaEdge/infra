@@ -26,9 +26,11 @@ spec:
       labels:
         app: redis
     spec:
+      nodeSelector:
+        node-role.apps: "true"
       containers:
       - name: redis
-        image: arm64v8/redis:7-alpine
+        image: redis:7-alpine
         ports:
         - containerPort: 6379
         volumeMounts:
