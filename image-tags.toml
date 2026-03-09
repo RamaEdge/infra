@@ -1,0 +1,88 @@
+# Container image tag tracking for core/infra.
+# Source of truth for /update-tags command.
+# After updating tags in deployment files, update this file to match.
+
+# ─── Internal images (Harbor) ────────────────────────────────────────────────
+
+[actions-runner]
+registry = "harbor.theedgeworks.ai/base/actions-runner"
+github = "RamaEdge/base"
+tag = "v0.4.1"
+files = [
+  "clusters/k3s-cluster/apps/actions-runner-controller/runner-scale-set-helmrelease.yaml",
+  "clusters/k3s-cluster/apps/actions-runner-controller/code-quality-runner-helmrelease.yaml",
+  "clusters/k3s-cluster/apps/actions-runner-controller/opcua-runner-set.yaml",
+  "clusters/k3s-cluster/apps/actions-runner-controller/modbus-runner-set.yaml",
+  "clusters/k3s-cluster/apps/actions-runner-controller/os-builder-runner-set.yaml",
+]
+# Direct image reference: image: harbor.theedgeworks.ai/base/actions-runner:<tag>
+update_style = "inline"
+
+[devpi]
+registry = "harbor.theedgeworks.ai/base/devpi"
+github = "RamaEdge/base"
+tag = "v0.4.1"
+files = ["clusters/k3s-cluster/apps/devpi/deployment.yaml"]
+# Direct image reference: image: harbor.theedgeworks.ai/base/devpi:<tag>
+update_style = "inline"
+
+# ─── External images ─────────────────────────────────────────────────────────
+
+[harbor]
+registry = "ghcr.io/octohelm/harbor/harbor-core"
+tag = "v2.14.0"
+tag_format = "v{semver}"
+multi_image = [
+  "ghcr.io/octohelm/harbor/harbor-core",
+  "ghcr.io/octohelm/harbor/harbor-portal",
+  "ghcr.io/octohelm/harbor/harbor-jobservice",
+  "ghcr.io/octohelm/harbor/registry-photon",
+  "ghcr.io/octohelm/harbor/harbor-registryctl",
+  "ghcr.io/octohelm/harbor/nginx-photon",
+  "ghcr.io/octohelm/harbor/harbor-db",
+  "ghcr.io/octohelm/harbor/harbor-exporter",
+  "ghcr.io/octohelm/harbor/trivy-adapter-photon",
+]
+files = ["clusters/k3s-cluster/apps/harbor/helmrelease.yaml"]
+# Helm values: image.tag under multiple sections
+update_style = "helm_tag"
+
+[redis]
+registry = "docker.io/library/redis"
+tag = "8-alpine"
+tag_format = "{major}-alpine"
+files = ["clusters/k3s-cluster/apps/harbor/redis.yaml"]
+# Direct image reference: image: redis:<tag>
+update_style = "inline"
+
+[minio-operator]
+registry = "quay.io/minio/operator"
+tag = "v7.1.1"
+tag_format = "v{semver}"
+multi_image = [
+  "quay.io/minio/operator",
+  "quay.io/minio/console",
+]
+files = ["clusters/k3s-cluster/apps/minio-operator/operator-helmrelease.yaml"]
+update_style = "helm_tag"
+
+[minio]
+registry = "quay.io/minio/minio"
+tag = "RELEASE.2025-09-07T16-13-09Z"
+tag_format = "RELEASE.{date}"
+files = ["clusters/k3s-cluster/apps/minio/tenant.yaml"]
+update_style = "inline"
+
+[busybox]
+registry = "docker.io/library/busybox"
+tag = "1.37.0"
+tag_format = "{semver}"
+files = ["clusters/k3s-cluster/apps/keycloak/helmrelease.yaml"]
+update_style = "helm_tag"
+
+[otel-collector]
+registry = "docker.io/otel/opentelemetry-collector-contrib"
+tag_format = "{semver}"
+files = ["clusters/k3s-cluster/apps/opentelemetry-collector/helmrelease.yaml"]
+update_style = "helm_repository"
+# Note: tag managed by chart version; only repository is pinned in values
