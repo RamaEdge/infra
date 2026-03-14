@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chromadb
+  namespace: chromadb
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: chromadb-tls
+      hosts:
+        - claudedb.theedgeworks.ai
+  rules:
+    - host: claudedb.theedgeworks.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chromadb
+                port:
+                  number: 8000

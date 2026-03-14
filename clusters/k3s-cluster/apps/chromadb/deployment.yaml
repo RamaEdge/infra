@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chromadb
+  namespace: chromadb
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: chromadb
+  template:
+    metadata:
+      labels:
+        app: chromadb
+    spec:
+      nodeSelector:
+        node-role.apps: "true"
+      securityContext:
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: chromadb
+          image: chromadb/chroma:1.5.5
+          env:
+            - name: IS_PERSISTENT
+              value: "TRUE"
+            - name: PERSIST_DIRECTORY
+              value: /chroma/chroma
+            - name: CHROMA_SERVER_AUTHN_PROVIDER
+              value: "chromadb.auth.token_authn.TokenAuthenticationServerProvider"
+            - name: CHROMA_SERVER_AUTHN_CREDENTIALS
+              valueFrom:
+                secretKeyRef:
+                  name: chromadb-auth
+                  key: token
+            - name: CHROMA_AUTH_TOKEN_TRANSPORT_HEADER
+              value: "Authorization"
+          ports:
+            - containerPort: 8000
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /api/v2/heartbeat
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/v2/heartbeat
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: chromadb-data
+              mountPath: /chroma/chroma
+      volumes:
+        - name: chromadb-data
+          persistentVolumeClaim:
+            claimName: chromadb-data
