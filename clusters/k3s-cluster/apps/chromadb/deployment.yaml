@@ -17,9 +17,6 @@ spec:
     spec:
       nodeSelector:
         node-role.apps: "true"
-      securityContext:
-        runAsUser: 1000
-        fsGroup: 1000
       containers:
         - name: chromadb
           image: chromadb/chroma:1.5.5
@@ -27,7 +24,7 @@ spec:
             - name: IS_PERSISTENT
               value: "TRUE"
             - name: PERSIST_DIRECTORY
-              value: /chroma/chroma
+              value: /data
             - name: CHROMA_SERVER_AUTHN_PROVIDER
               value: "chromadb.auth.token_authn.TokenAuthenticationServerProvider"
             - name: CHROMA_SERVER_AUTHN_CREDENTIALS
@@ -61,7 +58,7 @@ spec:
               memory: 512Mi
           volumeMounts:
             - name: chromadb-data
-              mountPath: /chroma/chroma
+              mountPath: /data
       volumes:
         - name: chromadb-data
           persistentVolumeClaim:
