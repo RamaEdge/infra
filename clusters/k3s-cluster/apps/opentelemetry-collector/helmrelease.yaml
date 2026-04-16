@@ -145,6 +145,8 @@ spec:
               match_type: regexp
               metric_names:
                 - "^claude_code\\..*"
+        # Convert delta temporality metrics (from Claude Code) to cumulative for Prometheus
+        deltatocumulative: {}
 
       exporters:
         loki:
@@ -190,6 +192,7 @@ spec:
             processors:
               - memory_limiter
               - filter/claude_metrics
+              - deltatocumulative
               - batch
             exporters:
               - prometheus
