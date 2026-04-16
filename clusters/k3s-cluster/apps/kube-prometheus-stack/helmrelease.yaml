@@ -56,9 +56,10 @@ spec:
       # Ensure admin password is set or use default (prom-operator)
       adminPassword: "prom-operator"
 
-      # Load Keycloak OIDC credentials from secret
+      # Load Keycloak OIDC credentials and SMTP password from secrets
       envFromSecrets:
         - name: keycloak-oidc
+        - name: grafana-smtp
 
       grafana.ini:
         server:
@@ -87,6 +88,16 @@ spec:
           name_attribute_path: name
           groups_attribute_path: groups
           role_attribute_path: contains(groups[*], 'grafana-admin') && 'Admin' || 'Viewer'
+        # SMTP via Google Workspace SMTP Relay
+        # Password is loaded from the grafana-smtp secret (GF_SMTP_PASSWORD)
+        smtp:
+          enabled: true
+          host: smtp-relay.gmail.com:587
+          user: ravichillerega@theedgeworks.ai
+          from_address: alerts@theedgeworks.ai
+          from_name: Grafana Alerts
+          startTLS_policy: MandatoryStartTLS
+          skip_verify: false
 
       # Loki datasource for log aggregation
       additionalDataSources:
