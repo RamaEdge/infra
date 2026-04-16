@@ -239,6 +239,9 @@ spec:
                   <p><strong>Status:</strong> {{ .Status }} &middot;
                      <strong>Firing:</strong> {{ .Alerts.Firing | len }} &middot;
                      <strong>Resolved:</strong> {{ .Alerts.Resolved | len }}</p>
+                  <p>
+                    <a href="https://monitor.theedgeworks.ai/alerting/list?search=alertname%3D{{ .CommonLabels.alertname }}">View in Grafana &rarr; Alerting</a>
+                  </p>
                   {{ range .Alerts }}
                   <hr>
                   <p><strong>{{ .Annotations.summary }}</strong></p>
@@ -249,7 +252,6 @@ spec:
                     {{ with .Labels.pod }}<strong>Pod:</strong> {{ . }}<br>{{ end }}
                     <strong>Started:</strong> {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
                   </p>
-                  {{ if .GeneratorURL }}<p><a href="{{ .GeneratorURL }}">View in Prometheus</a></p>{{ end }}
                   {{ end }}
         inhibit_rules:
           # Critical of the same alert+namespace suppresses warning/info
