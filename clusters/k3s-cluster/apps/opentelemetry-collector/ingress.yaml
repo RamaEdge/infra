@@ -23,20 +23,20 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: opentelemetry-collector-agent
+                name: opentelemetry-collector
                 port:
                   number: 4318
           - path: /v1/logs
             pathType: Prefix
             backend:
               service:
-                name: opentelemetry-collector-agent
+                name: opentelemetry-collector
                 port:
                   number: 4318
           - path: /v1/traces
             pathType: Prefix
             backend:
               service:
-                name: opentelemetry-collector-agent
+                name: opentelemetry-collector
                 port:
                   number: 4318
