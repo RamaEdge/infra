@@ -422,13 +422,32 @@ data:
             },
             "overrides": [
               { "matcher": { "id": "byName", "options": "Time" }, "properties": [{ "id": "custom.width", "value": 170 }] },
-              { "matcher": { "id": "byName", "options": "Event" }, "properties": [{ "id": "custom.width", "value": 200 }] },
-              { "matcher": { "id": "byName", "options": "Tool" }, "properties": [{ "id": "custom.width", "value": 120 }] },
-              { "matcher": { "id": "byName", "options": "Model" }, "properties": [{ "id": "custom.width", "value": 190 }] },
+              { "matcher": { "id": "byName", "options": "Event" }, "properties": [{ "id": "custom.width", "value": 170 }] },
+              { "matcher": { "id": "byName", "options": "Tool" }, "properties": [{ "id": "custom.width", "value": 110 }] },
+              { "matcher": { "id": "byName", "options": "Model" }, "properties": [{ "id": "custom.width", "value": 170 }] },
               { "matcher": { "id": "byName", "options": "Duration" }, "properties": [{ "id": "custom.width", "value": 100 }, { "id": "unit", "value": "ms" }] },
               { "matcher": { "id": "byName", "options": "Cost" }, "properties": [{ "id": "unit", "value": "currencyUSD" }, { "id": "custom.width", "value": 90 }] },
               { "matcher": { "id": "byName", "options": "Input" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "custom.width", "value": 80 }] },
-              { "matcher": { "id": "byName", "options": "Output" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "custom.width", "value": 80 }] }
+              { "matcher": { "id": "byName", "options": "Output" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "custom.width", "value": 80 }] },
+              { "matcher": { "id": "byName", "options": "Success" }, "properties": [{ "id": "custom.width", "value": 90 }] },
+              {
+                "matcher": { "id": "byName", "options": "User" },
+                "properties": [
+                  { "id": "custom.width", "value": 200 },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "regex",
+                        "options": {
+                          "pattern": "^(.)[^@]*(@.+)$",
+                          "result": { "text": "$1***$2" }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
             ]
           },
           "options": {
@@ -451,11 +470,11 @@ data:
           "transformations": [
             {
               "id": "extractFields",
-              "options": { "source": "Line", "format": "json", "keepTime": false, "replace": false }
+              "options": { "source": "Line", "format": "json", "keepTime": true, "replace": false }
             },
             {
               "id": "extractFields",
-              "options": { "source": "attributes", "format": "json", "keepTime": false, "replace": true }
+              "options": { "source": "attributes", "format": "json", "keepTime": true, "replace": true }
             },
             {
               "id": "organize",
@@ -480,7 +499,17 @@ data:
                   "user.account_id": true,
                   "organization.id": true,
                   "terminal.type": true,
-                  "app.version": true
+                  "app.version": true,
+                  "request_id": true,
+                  "decision_type": true,
+                  "speed": true,
+                  "tool_result_size_bytes": true,
+                  "tool_parameters": true,
+                  "tool_input": true,
+                  "mcp_server_scope": true,
+                  "prompt_length": true,
+                  "attempt": true,
+                  "status_code": true
                 },
                 "indexByName": {
                   "Time": 0,
@@ -503,6 +532,7 @@ data:
                 "renameByName": {
                   "event.name": "Event",
                   "tool_name": "Tool",
+                  "model": "Model",
                   "duration_ms": "Duration",
                   "cost_usd": "Cost",
                   "input_tokens": "Input",
@@ -511,6 +541,8 @@ data:
                   "cache_creation_tokens": "Cache Create",
                   "decision": "Decision",
                   "decision_source": "Source",
+                  "success": "Success",
+                  "error": "Error",
                   "session.id": "Session",
                   "user.email": "User"
                 }
