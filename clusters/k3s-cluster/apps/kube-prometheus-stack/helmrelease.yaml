@@ -109,6 +109,30 @@ spec:
           jsonData:
             maxLines: 1000
 
+      # Default unified alerting contact point and routing policy.
+      # Provisioned so a fresh install always has a working alert path.
+      alerting:
+        contactpoints.yaml:
+          apiVersion: 1
+          contactPoints:
+            - orgId: 1
+              name: email-default
+              receivers:
+                - uid: email-default-1
+                  type: email
+                  settings:
+                    addresses: chillerege.ravi@gmail.com
+                    singleEmail: false
+        policies.yaml:
+          apiVersion: 1
+          policies:
+            - orgId: 1
+              receiver: email-default
+              group_by: ["grafana_folder", "alertname"]
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 4h
+
       ingress:
         enabled: true
         ingressClassName: nginx
