@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: opentelemetry-collector-claude
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: opentelemetry-collector
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: opentelemetry-collector
+      app.kubernetes.io/name: opentelemetry-collector
+      component: agent-collector
+  endpoints:
+    - port: prometheus
+      interval: 30s
