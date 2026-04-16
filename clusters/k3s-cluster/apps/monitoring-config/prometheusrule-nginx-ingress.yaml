@@ -224,7 +224,7 @@ spec:
     # SSL certificate expiring soon
     - alert: NginxIngressSSLCertExpiringSoon
       expr: |
-        (nginx_ingress_controller_ssl_certificate_info - time()) / 86400 < 30
+        (nginx_ingress_controller_ssl_expire_time_seconds - time()) / 86400 < 30
       for: 1h
       labels:
         severity: warning
@@ -238,7 +238,7 @@ spec:
     # SSL certificate expired or expiring very soon
     - alert: NginxIngressSSLCertExpired
       expr: |
-        (nginx_ingress_controller_ssl_certificate_info - time()) / 86400 < 7
+        (nginx_ingress_controller_ssl_expire_time_seconds - time()) / 86400 < 7
       for: 1h
       labels:
         severity: critical
