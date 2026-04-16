@@ -421,12 +421,14 @@ data:
               "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
             },
             "overrides": [
-              { "matcher": { "id": "byName", "options": "Time" }, "properties": [{ "id": "custom.width", "value": 180 }] },
-              { "matcher": { "id": "byName", "options": "event_name" }, "properties": [{ "id": "custom.width", "value": 220 }] },
-              { "matcher": { "id": "byName", "options": "tool_name" }, "properties": [{ "id": "custom.width", "value": 140 }] },
-              { "matcher": { "id": "byName", "options": "model" }, "properties": [{ "id": "custom.width", "value": 200 }] },
-              { "matcher": { "id": "byName", "options": "duration_ms" }, "properties": [{ "id": "custom.width", "value": 110 }, { "id": "unit", "value": "ms" }] },
-              { "matcher": { "id": "byName", "options": "cost_usd" }, "properties": [{ "id": "unit", "value": "currencyUSD" }] }
+              { "matcher": { "id": "byName", "options": "Time" }, "properties": [{ "id": "custom.width", "value": 170 }] },
+              { "matcher": { "id": "byName", "options": "Event" }, "properties": [{ "id": "custom.width", "value": 200 }] },
+              { "matcher": { "id": "byName", "options": "Tool" }, "properties": [{ "id": "custom.width", "value": 120 }] },
+              { "matcher": { "id": "byName", "options": "Model" }, "properties": [{ "id": "custom.width", "value": 190 }] },
+              { "matcher": { "id": "byName", "options": "Duration" }, "properties": [{ "id": "custom.width", "value": 100 }, { "id": "unit", "value": "ms" }] },
+              { "matcher": { "id": "byName", "options": "Cost" }, "properties": [{ "id": "unit", "value": "currencyUSD" }, { "id": "custom.width", "value": 90 }] },
+              { "matcher": { "id": "byName", "options": "Input" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "custom.width", "value": 80 }] },
+              { "matcher": { "id": "byName", "options": "Output" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "custom.width", "value": 80 }] }
             ]
           },
           "options": {
@@ -452,39 +454,65 @@ data:
               "options": { "source": "Line", "format": "json", "keepTime": false, "replace": false }
             },
             {
+              "id": "extractFields",
+              "options": { "source": "attributes", "format": "json", "keepTime": false, "replace": true }
+            },
+            {
               "id": "organize",
               "options": {
                 "excludeByName": {
                   "Line": true,
                   "labels": true,
+                  "labelTypes": true,
                   "tsNs": true,
                   "id": true,
                   "detected_level": true,
-                  "body": true
+                  "body": true,
+                  "resources": true,
+                  "instrumentation_scope": true,
+                  "service_name": true,
+                  "telemetry_sdk_name": true,
+                  "event.sequence": true,
+                  "event.timestamp": true,
+                  "prompt.id": true,
+                  "user.id": true,
+                  "user.account_uuid": true,
+                  "user.account_id": true,
+                  "organization.id": true,
+                  "terminal.type": true,
+                  "app.version": true
                 },
                 "indexByName": {
                   "Time": 0,
-                  "event_name": 1,
+                  "event.name": 1,
                   "tool_name": 2,
                   "model": 3,
                   "duration_ms": 4,
                   "cost_usd": 5,
                   "input_tokens": 6,
                   "output_tokens": 7,
-                  "success": 8,
-                  "error": 9,
-                  "session_id": 10,
-                  "user_email": 11
+                  "cache_read_tokens": 8,
+                  "cache_creation_tokens": 9,
+                  "decision": 10,
+                  "decision_source": 11,
+                  "success": 12,
+                  "error": 13,
+                  "session.id": 14,
+                  "user.email": 15
                 },
                 "renameByName": {
-                  "event_name": "Event",
+                  "event.name": "Event",
                   "tool_name": "Tool",
                   "duration_ms": "Duration",
                   "cost_usd": "Cost",
-                  "input_tokens": "Input Tok",
-                  "output_tokens": "Output Tok",
-                  "session_id": "Session",
-                  "user_email": "User"
+                  "input_tokens": "Input",
+                  "output_tokens": "Output",
+                  "cache_read_tokens": "Cache Read",
+                  "cache_creation_tokens": "Cache Create",
+                  "decision": "Decision",
+                  "decision_source": "Source",
+                  "session.id": "Session",
+                  "user.email": "User"
                 }
               }
             }
