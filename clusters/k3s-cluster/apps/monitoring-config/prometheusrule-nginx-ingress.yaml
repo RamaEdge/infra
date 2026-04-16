@@ -43,14 +43,15 @@ spec:
   - name: nginx.ingress.errors
     interval: 30s
     rules:
-    # High 4xx error rate
+    # High 4xx error rate (excludes harbor - container registries return many 401s
+    # by design as part of the Docker auth handshake; see harbor rule below)
     - alert: NginxIngressHigh4xxRate
       expr: |
         (
-          sum(rate(nginx_ingress_controller_requests{status=~"4.."}[5m])) by (ingress, namespace)
-          / sum(rate(nginx_ingress_controller_requests[5m])) by (ingress, namespace)
+          sum(rate(nginx_ingress_controller_requests{status=~"4..", ingress!="harbor-harbor-ingress"}[5m])) by (ingress, namespace)
+          / sum(rate(nginx_ingress_controller_requests{ingress!="harbor-harbor-ingress"}[5m])) by (ingress, namespace)
         ) > 0.1
-        and sum(rate(nginx_ingress_controller_requests[5m])) by (ingress, namespace) > 0
+        and sum(rate(nginx_ingress_controller_requests{ingress!="harbor-harbor-ingress"}[5m])) by (ingress, namespace) > 0.1
       for: 5m
       labels:
         severity: warning
@@ -60,6 +61,25 @@ spec:
         description: |
           Ingress {{ $labels.namespace }}/{{ $labels.ingress }} has {{ $value | humanizePercentage }} 4xx errors.
           This may indicate client-side issues or misconfigured routes.
+
+    # Harbor-specific 4xx alert: excludes 401 (Docker registry auth handshake)
+    # and uses a higher minimum-volume floor since the registry is low-traffic.
+    - alert: NginxIngressHigh4xxRateHarbor
+      expr: |
+        (
+          sum(rate(nginx_ingress_controller_requests{ingress="harbor-harbor-ingress", status=~"4..", status!="401"}[5m])) by (ingress, namespace)
+          / sum(rate(nginx_ingress_controller_requests{ingress="harbor-harbor-ingress"}[5m])) by (ingress, namespace)
+        ) > 0.2
+        and sum(rate(nginx_ingress_controller_requests{ingress="harbor-harbor-ingress"}[5m])) by (ingress, namespace) > 0.1
+      for: 10m
+      labels:
+        severity: warning
+        component: nginx-ingress
+      annotations:
+        summary: "High non-auth 4xx error rate for Harbor"
+        description: |
+          Harbor ({{ $labels.namespace }}/{{ $labels.ingress }}) has {{ $value | humanizePercentage }} non-401 4xx errors.
+          401s are excluded because they are part of the normal Docker registry auth handshake.
     
     # High 5xx error rate
     - alert: NginxIngressHigh5xxRate
