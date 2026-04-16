@@ -38,6 +38,10 @@ spec:
         extractAllPodLabels: false
         extractAllPodAnnotations: false
 
+    # Enable ClusterIP service for ingress access
+    service:
+      enabled: true
+
     # OpenTelemetry Collector configuration
     config:
       receivers:
@@ -97,6 +101,13 @@ spec:
               field: attributes.time
             - type: remove
               field: attributes.logtag
+        # OTLP receiver for external sources (Claude Code, etc.)
+        otlp:
+          protocols:
+            grpc:
+              endpoint: ${env:MY_POD_IP}:4317
+            http:
+              endpoint: ${env:MY_POD_IP}:4318
 
       processors:
         batch:
@@ -121,6 +132,19 @@ spec:
             - action: insert
               key: loki.resource.labels
               value: k8s.namespace.name, k8s.pod.name, k8s.container.name
+        # Label OTLP logs for Loki (source identification)
+        resource/otlp:
+          attributes:
+            - action: insert
+              key: loki.resource.labels
+              value: service.name, telemetry.sdk.name
+        # Only allow Claude Code metrics, drop everything else
+        filter/claude_metrics:
+          metrics:
+            include:
+              match_type: regexp
+              metric_names:
+                - "^claude_code\\..*"
 
       exporters:
         loki:
@@ -128,9 +152,17 @@ spec:
           default_labels_enabled:
             exporter: false
             job: true
+        # Expose received OTLP metrics as a Prometheus scrape target
+        prometheus:
+          endpoint: ${env:MY_POD_IP}:9090
+          resource_to_telemetry_conversion:
+            enabled: true
+        debug:
+          verbosity: basic
 
       service:
         pipelines:
+          # Pod log collection pipeline
           logs:
             receivers:
               - filelog
@@ -141,6 +173,55 @@ spec:
               - batch
             exporters:
               - loki
+          # OTLP logs pipeline (Claude Code events)
+          logs/otlp:
+            receivers:
+              - otlp
+            processors:
+              - memory_limiter
+              - resource/otlp
+              - batch
+            exporters:
+              - loki
+          # OTLP metrics pipeline (Claude Code metrics only)
+          metrics:
+            receivers:
+              - otlp
+            processors:
+              - memory_limiter
+              - filter/claude_metrics
+              - batch
+            exporters:
+              - prometheus
+          # OTLP traces pipeline (Claude Code spans)
+          traces:
+            receivers:
+              - otlp
+            processors:
+              - memory_limiter
+              - batch
+            exporters:
+              - debug
+
+    # Additional ports for OTLP and Prometheus exporter
+    ports:
+      otlp:
+        enabled: true
+        containerPort: 4317
+        servicePort: 4317
+        hostPort: 4317
+        protocol: TCP
+      otlp-http:
+        enabled: true
+        containerPort: 4318
+        servicePort: 4318
+        hostPort: 4318
+        protocol: TCP
+      prometheus:
+        enabled: true
+        containerPort: 9090
+        servicePort: 9090
+        protocol: TCP
 
     # Volume mounts for log access
     extraVolumes:
@@ -162,6 +243,9 @@ spec:
     # Enable ServiceMonitor for Prometheus scraping
     serviceMonitor:
       enabled: true
+      extraEndpoints:
+        - port: prometheus
+          interval: 30s
 
     # Resource limits for RPi/ARM nodes
     resources:
