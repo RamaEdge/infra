@@ -150,6 +150,122 @@ spec:
     # Most default images in this chart are multi-arch.
     # If specific components fail, we may need to override images here.
 
+    # Disable Prometheus default rules that don't apply to k3s.
+    # k3s bundles the controller-manager, scheduler, and kube-proxy into a
+    # single server binary, so the standard scrape-based rules report them
+    # "down" because there are no separate endpoints to scrape.
+    defaultRules:
+      create: true
+      rules:
+        kubeControllerManager: false
+        kubeProxy: false
+        kubeSchedulerAlerting: false
+      disabled:
+        Watchdog: true
+        InfoInhibitor: true
+
+    # Stricter node availability alerts than the kube-prometheus defaults
+    # (which wait 15m). Nodes should not be down - we want to know fast.
+    additionalPrometheusRulesMap:
+      node-availability:
+        groups:
+          - name: node.availability
+            rules:
+              - alert: NodeDown
+                expr: up{job="node-exporter"} == 0
+                for: 2m
+                labels:
+                  severity: critical
+                annotations:
+                  summary: "Node {{ $labels.instance }} is unreachable"
+                  description: "node_exporter on {{ $labels.instance }} has been unscrapeable for 2 minutes. Node may be down, kubelet stopped, or networking broken."
+              - alert: NodeRebooted
+                expr: changes(node_boot_time_seconds[10m]) > 0
+                for: 1m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "Node {{ $labels.instance }} rebooted"
+                  description: "Node {{ $labels.instance }} rebooted within the last 10 minutes. If unplanned, investigate."
+
+    # Alertmanager: SMTP via Google Workspace relay, grouping to avoid
+    # duplicate-alert spam, severity-based routing, and inhibition rules
+    # so critical alerts suppress the matching warning alerts.
+    alertmanager:
+      alertmanagerSpec:
+        # Mount the existing grafana-smtp secret so the SMTP password is
+        # available at /etc/alertmanager/secrets/grafana-smtp/GF_SMTP_PASSWORD
+        secrets:
+          - grafana-smtp
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+      config:
+        global:
+          resolve_timeout: 5m
+          smtp_from: alerts@theedgeworks.ai
+          smtp_smarthost: smtp-relay.gmail.com:587
+          smtp_auth_username: ravichillerega@theedgeworks.ai
+          smtp_auth_password_file: /etc/alertmanager/secrets/grafana-smtp/GF_SMTP_PASSWORD
+          smtp_require_tls: true
+          smtp_hello: theedgeworks.ai
+        route:
+          receiver: email-default
+          group_by: ["alertname", "severity"]
+          group_wait: 30s
+          group_interval: 10m
+          repeat_interval: 4h
+          routes:
+            - matchers:
+                - severity = "critical"
+              receiver: email-default
+              repeat_interval: 1h
+            - matchers:
+                - alertname = "Watchdog"
+              receiver: "null"
+        receivers:
+          - name: "null"
+          - name: email-default
+            email_configs:
+              - to: chillerege.ravi@gmail.com
+                send_resolved: true
+                headers:
+                  Subject: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} ({{ .CommonLabels.severity }})'
+                html: |
+                  <h3>{{ .CommonLabels.alertname }} <small>({{ .CommonLabels.severity }})</small></h3>
+                  <p><strong>Status:</strong> {{ .Status }} &middot;
+                     <strong>Firing:</strong> {{ .Alerts.Firing | len }} &middot;
+                     <strong>Resolved:</strong> {{ .Alerts.Resolved | len }}</p>
+                  {{ range .Alerts }}
+                  <hr>
+                  <p><strong>{{ .Annotations.summary }}</strong></p>
+                  <p>{{ .Annotations.description }}</p>
+                  <p>
+                    {{ with .Labels.instance }}<strong>Instance:</strong> {{ . }}<br>{{ end }}
+                    {{ with .Labels.namespace }}<strong>Namespace:</strong> {{ . }}<br>{{ end }}
+                    {{ with .Labels.pod }}<strong>Pod:</strong> {{ . }}<br>{{ end }}
+                    <strong>Started:</strong> {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+                  </p>
+                  {{ if .GeneratorURL }}<p><a href="{{ .GeneratorURL }}">View in Prometheus</a></p>{{ end }}
+                  {{ end }}
+        inhibit_rules:
+          # Critical of the same alert+namespace suppresses warning/info
+          - source_matchers:
+              - severity = "critical"
+            target_matchers:
+              - severity =~ "warning|info"
+            equal: ["alertname", "namespace"]
+          # NodeDown suppresses every other alert from the same instance
+          # (when the node is gone, downstream pod alerts are noise)
+          - source_matchers:
+              - alertname = "NodeDown"
+            target_matchers:
+              - severity =~ "warning|info|critical"
+            equal: ["instance"]
+
     # Resource limits can be tuned for RPi
     prometheusOperator:
       resources:
