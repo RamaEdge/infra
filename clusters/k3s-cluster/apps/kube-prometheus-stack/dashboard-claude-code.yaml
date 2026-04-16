@@ -548,8 +548,8 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum by (event_name) (count_over_time({service_name=\"claude-code\"} | json | event_name != `` [$__auto]))",
-              "legendFormat": "{{ event_name }}"
+              "expr": "sum by (attributes_event_name) (count_over_time({service_name=\"claude-code\"} | json | attributes_event_name != `` [$__auto]))",
+              "legendFormat": "{{ attributes_event_name }}"
             }
           ]
         },
@@ -557,33 +557,97 @@ data:
           "datasource": { "type": "loki", "uid": "loki" },
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "palette-classic" },
-              "custom": {
-                "axisBorderShow": false,
-                "drawStyle": "bars",
-                "fillOpacity": 80,
-                "gradientMode": "none",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": { "type": "linear" },
-                "showPoints": "never"
-              },
-              "unit": "short"
+              "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "filterable": true, "inspect": false },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
             },
-            "overrides": []
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Time" }, "properties": [{ "id": "custom.width", "value": 170 }] },
+              { "matcher": { "id": "byName", "options": "Model" }, "properties": [{ "id": "custom.width", "value": 190 }] },
+              { "matcher": { "id": "byName", "options": "Status" }, "properties": [{ "id": "custom.width", "value": 90 }] },
+              { "matcher": { "id": "byName", "options": "Attempt" }, "properties": [{ "id": "custom.width", "value": 90 }] },
+              { "matcher": { "id": "byName", "options": "Duration" }, "properties": [{ "id": "custom.width", "value": 110 }, { "id": "unit", "value": "ms" }] },
+              { "matcher": { "id": "byName", "options": "Speed" }, "properties": [{ "id": "custom.width", "value": 90 }] },
+              {
+                "matcher": { "id": "byName", "options": "Error" },
+                "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text", "wrapText": true } }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+              }
+            ]
           },
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+          "gridPos": { "h": 10, "w": 12, "x": 12, "y": 32 },
           "id": 13,
           "options": {
-            "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" },
-            "tooltip": { "mode": "multi", "sort": "desc" }
+            "showHeader": true,
+            "cellHeight": "sm",
+            "footer": { "show": true, "reducer": ["count"], "fields": ["Error"] },
+            "sortBy": [{ "desc": true, "displayName": "Time" }]
           },
           "title": "API Errors",
-          "type": "timeseries",
+          "type": "table",
           "targets": [
             {
-              "expr": "sum(count_over_time({service_name=\"claude-code\"} | json | event_name = `claude_code.api_error` [$__auto]))",
-              "legendFormat": "Errors"
+              "expr": "{service_name=\"claude-code\"} | json | attributes_event_name=`api_error`",
+              "legendFormat": "",
+              "refId": "A",
+              "queryType": "range",
+              "maxLines": 500
+            }
+          ],
+          "transformations": [
+            {
+              "id": "extractFields",
+              "options": { "source": "Line", "format": "json", "keepTime": false, "replace": false }
+            },
+            {
+              "id": "extractFields",
+              "options": { "source": "attributes", "format": "json", "keepTime": false, "replace": true }
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Line": true,
+                  "labels": true,
+                  "labelTypes": true,
+                  "tsNs": true,
+                  "id": true,
+                  "detected_level": true,
+                  "body": true,
+                  "resources": true,
+                  "instrumentation_scope": true,
+                  "service_name": true,
+                  "telemetry_sdk_name": true,
+                  "event.name": true,
+                  "event.sequence": true,
+                  "event.timestamp": true,
+                  "prompt.id": true,
+                  "user.id": true,
+                  "user.account_uuid": true,
+                  "user.account_id": true,
+                  "organization.id": true,
+                  "terminal.type": true,
+                  "app.version": true,
+                  "session.id": true,
+                  "user.email": true
+                },
+                "indexByName": {
+                  "Time": 0,
+                  "model": 1,
+                  "status_code": 2,
+                  "attempt": 3,
+                  "duration_ms": 4,
+                  "speed": 5,
+                  "error": 6
+                },
+                "renameByName": {
+                  "model": "Model",
+                  "status_code": "Status",
+                  "attempt": "Attempt",
+                  "duration_ms": "Duration",
+                  "speed": "Speed",
+                  "error": "Error"
+                }
+              }
             }
           ]
         },
@@ -660,8 +724,8 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | json | event_name = `claude_code.tool_result` | tool_name != `` [$__auto]))",
-              "legendFormat": "{{ tool_name }}"
+              "expr": "sum by (attributes_tool_name) (count_over_time({service_name=\"claude-code\"} | json | attributes_event_name = `tool_result` | attributes_tool_name != `` [$__auto]))",
+              "legendFormat": "{{ attributes_tool_name }}"
             }
           ]
         }
