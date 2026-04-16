@@ -128,7 +128,9 @@ spec:
           storageClass: longhorn
           # JobService runs as UID 10000, fsGroup in pod securityContext handles permissions
         trivy:
-          size: 5Gi
+          # CVE database is ~2.2GB and grows ~few hundred MB/year. 20Gi gives
+          # multi-year headroom and prevents LonghornVolumeUsage alerts.
+          size: 20Gi
           accessMode: ReadWriteOnce
           storageClass: longhorn
         database:
