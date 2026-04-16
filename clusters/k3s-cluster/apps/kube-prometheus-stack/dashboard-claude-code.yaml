@@ -628,11 +628,11 @@ data:
           "transformations": [
             {
               "id": "extractFields",
-              "options": { "source": "Line", "format": "json", "keepTime": false, "replace": false }
+              "options": { "source": "Line", "format": "json", "keepTime": true, "replace": false }
             },
             {
               "id": "extractFields",
-              "options": { "source": "attributes", "format": "json", "keepTime": false, "replace": true }
+              "options": { "source": "attributes", "format": "json", "keepTime": true, "replace": true }
             },
             {
               "id": "organize",
