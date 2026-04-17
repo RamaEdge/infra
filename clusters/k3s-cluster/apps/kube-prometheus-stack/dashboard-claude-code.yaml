@@ -93,11 +93,12 @@ data:
             "textMode": "auto",
             "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
           },
-          "title": "Total Tokens",
+          "title": "Total Tokens (range)",
+          "description": "Total tokens used across all models within the dashboard time range (default: last 24h). Changes with the time picker.",
           "type": "stat",
           "targets": [
             {
-              "expr": "sum(claude_code_token_usage_tokens_total)",
+              "expr": "sum(increase(claude_code_token_usage_tokens_total[$__range]))",
               "legendFormat": "Tokens"
             }
           ]
@@ -305,13 +306,14 @@ data:
             },
             "pieType": "donut",
             "tooltip": { "mode": "single", "sort": "desc" },
-            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
           },
-          "title": "Tokens by Model",
+          "title": "Tokens by Model (range)",
+          "description": "Tokens per model within the dashboard time range (default: last 24h). Changes with the time picker.",
           "type": "piechart",
           "targets": [
             {
-              "expr": "sum by (model) (claude_code_token_usage_tokens_total)",
+              "expr": "sum by (model) (increase(claude_code_token_usage_tokens_total[$__range]))",
               "legendFormat": "{{ model }}"
             }
           ]
