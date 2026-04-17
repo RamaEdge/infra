@@ -76,42 +76,6 @@ data:
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "yellow", "value": 5 },
-                  { "color": "red", "value": 20 }
-                ]
-              },
-              "unit": "currencyUSD",
-              "mappings": []
-            },
-            "overrides": []
-          },
-          "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
-          "id": 2,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "textMode": "auto",
-            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
-          },
-          "title": "Total Cost (USD)",
-          "type": "stat",
-          "targets": [
-            {
-              "expr": "sum(claude_code_cost_usage_USD_total)",
-              "legendFormat": "Cost"
-            }
-          ]
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "$datasource" },
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
                   { "color": "blue", "value": null }
                 ]
               },
@@ -120,7 +84,7 @@ data:
             },
             "overrides": []
           },
-          "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+          "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
           "id": 3,
           "options": {
             "colorMode": "value",
@@ -154,7 +118,7 @@ data:
             },
             "overrides": []
           },
-          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+          "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
           "id": 4,
           "options": {
             "colorMode": "value",
@@ -188,7 +152,7 @@ data:
             },
             "overrides": []
           },
-          "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
           "id": 5,
           "options": {
             "colorMode": "value",
@@ -222,7 +186,7 @@ data:
             },
             "overrides": []
           },
-          "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+          "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
           "id": 6,
           "options": {
             "colorMode": "value",
@@ -279,43 +243,8 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum by (type) (rate(claude_code_token_usage_tokens_total[$__rate_interval]))",
+              "expr": "sum by (type) (increase(claude_code_token_usage_tokens_total[$__interval]))",
               "legendFormat": "{{ type }}"
-            }
-          ]
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "$datasource" },
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "palette-classic" },
-              "custom": {
-                "axisBorderShow": false,
-                "axisLabel": "USD",
-                "drawStyle": "line",
-                "fillOpacity": 20,
-                "gradientMode": "scheme",
-                "lineWidth": 2,
-                "pointSize": 5,
-                "scaleDistribution": { "type": "linear" },
-                "showPoints": "never"
-              },
-              "unit": "currencyUSD"
-            },
-            "overrides": []
-          },
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
-          "id": 8,
-          "options": {
-            "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" },
-            "tooltip": { "mode": "multi", "sort": "desc" }
-          },
-          "title": "Cost Over Time",
-          "type": "timeseries",
-          "targets": [
-            {
-              "expr": "sum(increase(claude_code_cost_usage_USD_total[$__interval]))",
-              "legendFormat": "Cost"
             }
           ]
         },
@@ -357,7 +286,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum(rate(claude_code_session_count_total[$__rate_interval]))",
+              "expr": "sum(increase(claude_code_session_count_total[$__interval]))",
               "legendFormat": "Sessions"
             }
           ]
@@ -393,11 +322,11 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum(rate(claude_code_commit_count_total[$__rate_interval]))",
+              "expr": "sum(increase(claude_code_commit_count_total[$__interval]))",
               "legendFormat": "Commits"
             },
             {
-              "expr": "sum(rate(claude_code_pull_request_count_total[$__rate_interval]))",
+              "expr": "sum(increase(claude_code_pull_request_count_total[$__interval]))",
               "legendFormat": "Pull Requests"
             }
           ]
@@ -721,7 +650,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "sum by (decision) (rate(claude_code_code_edit_tool_decision_total[$__rate_interval]))",
+              "expr": "sum by (decision) (increase(claude_code_code_edit_tool_decision_total[$__interval]))",
               "legendFormat": "{{ decision }}"
             }
           ]
