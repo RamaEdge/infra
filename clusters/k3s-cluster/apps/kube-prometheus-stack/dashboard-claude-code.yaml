@@ -205,6 +205,41 @@ data:
           ]
         },
         {
+          "datasource": { "type": "prometheus", "uid": "$datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "cyan", "value": null }
+                ]
+              },
+              "unit": "short",
+              "decimals": 0,
+              "mappings": []
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+          "id": 16,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "textMode": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+          },
+          "title": "Tokens / Session",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "sum(claude_code_token_usage_tokens_total) / sum(claude_code_session_count_total)",
+              "legendFormat": "Avg"
+            }
+          ]
+        },
+        {
           "collapsed": false,
           "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
           "id": 101,
@@ -245,6 +280,39 @@ data:
             {
               "expr": "sum by (type) (increase(claude_code_token_usage_tokens_total[$__interval]))",
               "legendFormat": "{{ type }}"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "$datasource" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false } },
+              "mappings": [],
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+          "id": 17,
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "values": ["value", "percent"]
+            },
+            "pieType": "donut",
+            "tooltip": { "mode": "single", "sort": "desc" },
+            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }
+          },
+          "title": "Tokens by Model",
+          "type": "piechart",
+          "targets": [
+            {
+              "expr": "sum by (model) (claude_code_token_usage_tokens_total)",
+              "legendFormat": "{{ model }}"
             }
           ]
         },
