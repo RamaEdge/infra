@@ -10,3 +10,4 @@ resources:
   - modbus-runner-set.yaml
   - opcua-runner-set.yaml
   - os-builder-runner-set.yaml
+  - renovate-runner-set.yaml
