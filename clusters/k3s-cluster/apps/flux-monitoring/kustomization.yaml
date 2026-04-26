@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+
+resources:
+  - podmonitor.yaml
+  - prometheusrule.yaml
+
+# Bundle Flux's official Grafana dashboards as a labeled ConfigMap.
+# kube-prometheus-stack's Grafana sidecar auto-discovers ConfigMaps with
+# label `grafana_dashboard: "1"` and loads them.
+configMapGenerator:
+  - name: flux-grafana-dashboards
+    files:
+      - dashboards/cluster.json
+      - dashboards/control-plane.json
+      - dashboards/logs.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+        app.kubernetes.io/part-of: flux
+        app.kubernetes.io/component: monitoring

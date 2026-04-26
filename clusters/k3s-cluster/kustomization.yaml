@@ -8,6 +8,7 @@ resources:
   - apps/kube-prometheus-stack
   - apps/loki
   - apps/opentelemetry-collector
+  - apps/flux-monitoring
   - apps/actions-runner-controller
   - apps/devpi
   - apps/chromadb

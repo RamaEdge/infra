@@ -1,0 +1,49 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-system
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: flux
+    app.kubernetes.io/component: monitoring
+spec:
+  groups:
+    - name: flux-system.rules
+      rules:
+        - alert: FluxComponentAbsent
+          expr: |
+            absent(up{job=~"helm-controller|source-controller|kustomize-controller|notification-controller"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Flux controller absent from Prometheus targets
+            description: |
+              A Flux controller has been absent from Prometheus targets for >5m.
+              Either Prometheus cannot scrape it, or the controller pod isn't running.
+
+        - alert: FluxReconciliationFailure
+          expr: |
+            max by (namespace, name, kind) (gotk_reconcile_condition{status="False",type="Ready"}) == 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: '{{ $labels.kind }} {{ $labels.namespace }}/{{ $labels.name }} reconciliation failing'
+            description: |
+              Flux {{ $labels.kind }} {{ $labels.namespace }}/{{ $labels.name }} has been
+              failing reconciliation for >10m. Check `flux get {{ $labels.kind | toLower }}
+              -n {{ $labels.namespace }} {{ $labels.name }}` for details.
+
+        - alert: FluxResourceSuspended
+          expr: |
+            max by (namespace, name, kind) (gotk_suspend_status) > 0
+          for: 1h
+          labels:
+            severity: info
+          annotations:
+            summary: '{{ $labels.kind }} {{ $labels.namespace }}/{{ $labels.name }} suspended'
+            description: |
+              Flux {{ $labels.kind }} {{ $labels.namespace }}/{{ $labels.name }} has been
+              suspended for >1h. Resume with `flux resume {{ $labels.kind | toLower }}
+              -n {{ $labels.namespace }} {{ $labels.name }}` if unintended.
