@@ -42,11 +42,7 @@ spec:
           fsGroup: 1001
         containers:
           - name: runner
-            # TODO: pin to the next base release tag once cut (e.g. v0.5.0).
-            # `latest` works because the base build pipeline maintains a
-            # multi-arch :latest manifest, but pinning matches the convention
-            # used by the other runner sets in this directory.
-            image: harbor.theedgeworks.ai/base/actions-runner-renovate:latest
+            image: harbor.theedgeworks.ai/base/actions-runner-renovate:v0.5.1
             command: ["/home/runner/run.sh"]
             resources:
               requests:
