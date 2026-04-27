@@ -76,8 +76,14 @@ spec:
     - Ingress
   ingress:
     - from:
+        # Home subnet covering all current and future cluster nodes.
+        # The K8s API server calls this webhook from the control-plane
+        # host network, so source IP is the node IP (not a pod IP) — only
+        # ipBlock can match. Using the /24 instead of a single /32 means
+        # the rule survives node IP changes, control-plane migrations, or
+        # additional control-plane nodes joining the cluster.
         - ipBlock:
-            cidr: 192.168.0.14/32
+            cidr: 192.168.0.0/24
       ports:
         - protocol: TCP
           port: 10250
