@@ -46,3 +46,14 @@ spec:
         limits:
           cpu: 500m
           memory: 512Mi
+      networkPolicy:
+        enabled: true
+        allowExternal: false
+        extraIngress:
+          - from:
+              - podSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: keycloakx
+            ports:
+              - port: 5432
+                protocol: TCP
