@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - helmrelease.yaml
+  - networkpolicy.yaml
   # Grafana Dashboards (ConfigMaps - no CRD dependency)
   - dashboard-harbor.yaml
   - dashboard-nginx-ingress.yaml
