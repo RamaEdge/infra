@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - runner-namespace.yaml
+  - runner-networkpolicy.yaml
   - operator-helmrelease.yaml
   - runner-scale-set-helmrelease.yaml
   - code-quality-runner-helmrelease.yaml
