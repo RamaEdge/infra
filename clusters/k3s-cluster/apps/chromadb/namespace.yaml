@@ -4,3 +4,10 @@ metadata:
   name: chromadb
   labels:
     name: chromadb
+    # Pod Security Standards — warn-only mode (diagnostic). Surfaces violations
+    # on `kubectl apply` and Flux reconcile. Does not enforce; existing pods are
+    # unaffected. Once warnings are clear, promote to `enforce`.
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
