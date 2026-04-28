@@ -18,12 +18,21 @@ spec:
       nodeSelector:
         node-role.apps: "true"
       securityContext:
+        runAsNonRoot: true
         runAsUser: 1000
+        runAsGroup: 1000
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: devpi-server
           image: harbor.theedgeworks.ai/base/devpi:v0.4.1
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: DEVPI_SERVERDIR
               value: /devpi/server

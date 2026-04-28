@@ -17,9 +17,21 @@ spec:
     spec:
       nodeSelector:
         node-role.apps: "true"
+      # Note: chromadb runs as root because the upstream chroma image lacks
+      # a USER directive and existing /data file permissions (mode 0644 on
+      # chroma.sqlite3) would prevent a non-root migration without manual
+      # chmod. Namespace is at PSS=baseline, not restricted, for this reason.
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: chromadb
           image: chromadb/chroma:1.5.5
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: IS_PERSISTENT
               value: "TRUE"
