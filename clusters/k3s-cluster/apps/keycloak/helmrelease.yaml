@@ -57,6 +57,28 @@ spec:
       - name: JAVA_OPTS_APPEND
         value: "-XX:MaxRAMPercentage=70.0 -XX:+ExitOnOutOfMemoryError -Djava.awt.headless=true -Djgroups.dns.query=keycloak-keycloak-keycloakx-headless.keycloak.svc.cluster.local"
 
+    # PSS=restricted compliance.
+    # Pod-level: fsGroup so /opt/keycloak/data is writable; seccompProfile set
+    # at pod level so it inherits to all containers (including init).
+    podSecurityContext:
+      fsGroup: 1000
+      fsGroupChangePolicy: OnRootMismatch
+      seccompProfile:
+        type: RuntimeDefault
+    # Keycloak container — chart defaults set runAsUser/runAsNonRoot but not
+    # caps/allowPrivEsc/seccomp. We restate the defaults explicitly + add the
+    # restricted-PSS-required fields.
+    securityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
+
     # Database connection checker
     dbchecker:
       enabled: true
@@ -68,6 +90,11 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         runAsNonRoot: true
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: RuntimeDefault
       resources:
         requests:
           cpu: 20m
