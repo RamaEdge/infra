@@ -36,9 +36,15 @@ spec:
         node-role.apps: "true"
       securityContext:
         runAsNonRoot: true
+        # Image redis:8-alpine: uid=999(redis) gid=1000(redis). Matching
+        # runAsGroup avoids gid=999 surfacing as `ping` in the running pod.
         runAsUser: 999
-        runAsGroup: 999
-        fsGroup: 999
+        runAsGroup: 1000
+        fsGroup: 1000
+        # Skip recursive chown on every restart once /data root is correctly
+        # owned. First rollout after this change does a one-time chown
+        # 999→1000 on the existing PVC; subsequent restarts are fast.
+        fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
       containers:
