@@ -18,6 +18,12 @@ metadata:
   namespace: harbor
 spec:
   replicas: 1
+  # PVC is ReadWriteOnce, so a RollingUpdate cannot start a new pod until the
+  # old one releases the volume — and the old one won't terminate until the
+  # new one is Ready. That deadlocks any template change. Recreate kills the
+  # old pod first (~10s redis unavailability per update; harbor retries).
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: redis
