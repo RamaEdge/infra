@@ -10,16 +10,52 @@ spec:
   groups:
     - name: flux-system.rules
       rules:
-        - alert: FluxComponentAbsent
-          expr: |
-            absent(up{job=~"helm-controller|source-controller|kustomize-controller|notification-controller"} == 1)
+        # Per-controller absence alerts. The PodMonitor relabels `job` to the
+        # controller name (helm-controller, source-controller, etc.) so a single
+        # `absent()` per job catches a single-controller outage. A combined
+        # `job=~"a|b|c|d"` matcher would only fire when ALL four disappear.
+        - alert: FluxHelmControllerAbsent
+          expr: absent(up{job="helm-controller"} == 1)
           for: 5m
           labels:
             severity: critical
           annotations:
-            summary: Flux controller absent from Prometheus targets
+            summary: Flux helm-controller absent from Prometheus targets
             description: |
-              A Flux controller has been absent from Prometheus targets for >5m.
+              helm-controller has been absent from Prometheus targets for >5m.
+              Either Prometheus cannot scrape it, or the controller pod isn't running.
+
+        - alert: FluxSourceControllerAbsent
+          expr: absent(up{job="source-controller"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Flux source-controller absent from Prometheus targets
+            description: |
+              source-controller has been absent from Prometheus targets for >5m.
+              Either Prometheus cannot scrape it, or the controller pod isn't running.
+
+        - alert: FluxKustomizeControllerAbsent
+          expr: absent(up{job="kustomize-controller"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Flux kustomize-controller absent from Prometheus targets
+            description: |
+              kustomize-controller has been absent from Prometheus targets for >5m.
+              Either Prometheus cannot scrape it, or the controller pod isn't running.
+
+        - alert: FluxNotificationControllerAbsent
+          expr: absent(up{job="notification-controller"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Flux notification-controller absent from Prometheus targets
+            description: |
+              notification-controller has been absent from Prometheus targets for >5m.
               Either Prometheus cannot scrape it, or the controller pod isn't running.
 
         - alert: FluxReconciliationFailure

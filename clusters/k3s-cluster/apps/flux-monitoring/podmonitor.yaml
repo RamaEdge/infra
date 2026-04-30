@@ -23,3 +23,9 @@ spec:
           - image-reflector-controller
   podMetricsEndpoints:
     - port: http-prom
+      # Override the Operator-default job label (`monitoring/flux-system`)
+      # with the controller name from the pod's `app` label, so alerts can
+      # match per-controller (helm-controller, source-controller, etc.).
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_app]
+          targetLabel: job
