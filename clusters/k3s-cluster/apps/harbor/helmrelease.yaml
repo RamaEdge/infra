@@ -33,6 +33,15 @@ spec:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-core
         tag: v2.14.0
+      # Idle ~1m/70Mi; spikes during auth/scan triggers. Headroom for
+      # OIDC token validation under burst (multiple users login).
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
 
     portal:
       nodeSelector:
@@ -40,6 +49,14 @@ spec:
       image:
         repository: ghcr.io/octohelm/harbor/harbor-portal
         tag: v2.14.0
+      # Static nginx serving the UI bundle. Idle ~1m/7Mi.
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
     jobservice:
       nodeSelector:
         node-role.apps: "true"
@@ -52,6 +69,14 @@ spec:
         runAsGroup: 10000
         fsGroup: 10000
         fsGroupChangePolicy: OnRootMismatch
+      # Idle ~2m/34Mi; spikes during GC and replication runs.
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
     registry:
       nodeSelector:
         node-role.apps: "true"
@@ -69,10 +94,27 @@ spec:
           fsGroupChangePolicy: OnRootMismatch
         # Override registry config to use /var/lib/registry as storage path
         # This matches the default registry image volume path
+        # Idle ~1m/55Mi; image push/pull streams ~200Mi peak. Generous
+        # limit to avoid OOM during big-image (>1GB) pushes from CI.
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
       controller:
         image:
           repository: ghcr.io/octohelm/harbor/harbor-registryctl
           tag: v2.14.0
+        # Sidecar control plane — small Go binary. Modest sizing.
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
     nginx:
       nodeSelector:
         node-role.apps: "true"
