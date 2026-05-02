@@ -24,7 +24,17 @@ spec:
   values:
     externalURL: https://harbor.theedgeworks.ai
     imagePullPolicy: IfNotPresent
-    
+
+    # Use Recreate for the jobservice and registry deployments because their
+    # PVCs are RWO (longhorn). RollingUpdate (the chart default) deadlocks on
+    # any template change: new pod can't mount the volume until the old pod
+    # releases it, and the old pod won't terminate until the new pod is Ready.
+    # Surfaced when PR #32 (resource limits) triggered rollouts that hung in
+    # ContainerCreating with FailedAttachVolume / Multi-Attach errors.
+    # Costs ~30s downtime per redeploy; harbor clients retry transparently.
+    updateStrategy:
+      type: Recreate
+
     # Harbor Core Configuration
     # Using octohelm/harbor images from GHCR which support ARM64
     core:
