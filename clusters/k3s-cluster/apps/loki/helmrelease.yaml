@@ -25,6 +25,18 @@ spec:
 
     loki:
       auth_enabled: false
+      # PSS=restricted compliance: chart defaults set everything except
+      # seccompProfile. Adding it here merges into the chart's existing
+      # podSecurityContext / containerSecurityContext maps (which already
+      # set runAs*, fsGroup, drop ALL, allowPrivEsc=false, readOnlyRootFs).
+      # Applies to both the loki StatefulSet and lokiCanary DaemonSet
+      # (the canary template references loki.podSecurityContext).
+      podSecurityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containerSecurityContext:
+        seccompProfile:
+          type: RuntimeDefault
       commonConfig:
         replication_factor: 1
       storage:
