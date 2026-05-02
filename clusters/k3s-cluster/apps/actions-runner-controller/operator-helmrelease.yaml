@@ -24,12 +24,30 @@ spec:
     remediation:
       retries: 3
   values:
-    # Controller configuration
-    controllerManager:
-      resources:
-        requests:
-          memory: "128Mi"
-          cpu: "100m"
-        limits:
-          memory: "256Mi"
-          cpu: "200m"
+    # Resource limits for the controller manager.
+    # Note: must be top-level (not nested under `controllerManager:` as
+    # before — the chart's deployment template references .Values.resources
+    # directly, so the previous nested form was silently ignored, leaving
+    # the controller with no resource limits).
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+    # PSS=restricted compliance for the controller pod.
+    # runAsUser intentionally omitted — let k8s use the image's USER
+    # directive; runAsNonRoot:true rejects only if image USER is 0.
+    podSecurityContext:
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true

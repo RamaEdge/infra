@@ -33,6 +33,26 @@ spec:
     minRunners: 0
     maxRunners: 10
     
+    # Listener pod template (proxy that polls GitHub API for jobs and
+    # spawns runners). The listener image is the same distroless controller
+    # image, which runs as nonroot via its USER directive; we add the
+    # caps/seccomp/allowPrivEsc fields needed for restricted PSS.
+    listenerTemplate:
+      spec:
+        securityContext:
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        containers:
+          - name: listener
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+              readOnlyRootFilesystem: true
+              runAsNonRoot: true
+
     # Runner pod template
     template:
       spec:
