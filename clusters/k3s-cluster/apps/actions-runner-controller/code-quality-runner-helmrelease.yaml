@@ -52,6 +52,17 @@ spec:
                   - ALL
               readOnlyRootFilesystem: true
               runAsNonRoot: true
+            # Listener is a small Go binary that polls the GitHub API.
+            # 25m/64Mi is enough idle; bursts to ~50m/100Mi when starting
+            # runner pods. Cap at 100m/128Mi so a runaway can't starve
+            # neighbors.
+            resources:
+              requests:
+                cpu: 25m
+                memory: 64Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
 
     # Runner pod template
     template:
