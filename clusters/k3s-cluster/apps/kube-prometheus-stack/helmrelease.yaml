@@ -53,6 +53,13 @@ spec:
         storageClassName: longhorn
         accessModes: ["ReadWriteOnce"]
         size: 2Gi
+
+      # Skip the init-chown-data init container — it runs as UID 0 with
+      # cap_chown to fix volume permissions, which violates restricted PSS.
+      # The pod-level fsGroup:472 already ensures kubelet recursively
+      # chowns the PVC to GID 472 on mount, so the init is redundant.
+      initChownData:
+        enabled: false
       # Ensure admin password is set or use default (prom-operator)
       adminPassword: "prom-operator"
 
