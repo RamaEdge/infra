@@ -36,6 +36,17 @@ spec:
         # Retention configuration
         retention: 10d
         retentionSize: 450GB
+        # Observed ~173m/1.3Gi at steady state. Generous headroom because
+        # query bursts (Grafana dashboard refreshes) can spike CPU; 10d
+        # of metrics means TSDB head can grow during high-cardinality
+        # spikes. OOM here would lose recent samples.
+        resources:
+          requests:
+            cpu: 200m
+            memory: 1Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
         # Scrape ServiceMonitors from all namespaces
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false
@@ -60,6 +71,26 @@ spec:
       # chowns the PVC to GID 472 on mount, so the init is redundant.
       initChownData:
         enabled: false
+
+      # Observed RSS ~900Mi (dashboard + query result caches accumulate).
+      # 2Gi limit gives 2x headroom; OOM was a real risk at 1Gi.
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 2Gi
+      # sc-dashboard and sc-datasources sidecars use the shared sidecar
+      # value path. Both are tiny (Python file watchers).
+      sidecar:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
       # Ensure admin password is set or use default (prom-operator)
       adminPassword: "prom-operator"
 
@@ -204,8 +235,10 @@ spec:
         # available at /etc/alertmanager/secrets/grafana-smtp/GF_SMTP_PASSWORD
         secrets:
           - grafana-smtp
+        # Idle ~1m/46Mi for the alertmanager container.
         resources:
           limits:
+            cpu: 100m
             memory: 256Mi
           requests:
             cpu: 50m
@@ -283,9 +316,43 @@ spec:
 
     # Resource limits can be tuned for RPi
     prometheusOperator:
+      # Idle ~2m/49Mi.
       resources:
         limits:
+          cpu: 200m
           memory: 200Mi
         requests:
           cpu: 100m
           memory: 100Mi
+      # config-reloader sidecar runs in BOTH alertmanager and prometheus
+      # StatefulSets. Single value path covers both. Idle ~1m/15Mi each.
+      prometheusConfigReloader:
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
+
+    # Subchart values (resources flow into the kube-state-metrics
+    # Deployment via the bundled subchart).
+    # Idle ~2m/43Mi.
+    kube-state-metrics:
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+    # node-exporter DaemonSet — one pod per node. Idle 1-4m/12-24Mi.
+    prometheus-node-exporter:
+      resources:
+        requests:
+          cpu: 25m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
