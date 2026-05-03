@@ -72,15 +72,18 @@ spec:
         size: 200Gi
 
     # loki-sc-rules sidecar (kiwi k8s-sidecar) — watches ConfigMaps for
-    # rule files. Tiny Python watcher.
+    # rule files. Idle 22Mi but spikes during initial ConfigMap list/watch
+    # establishment (Python in-memory caching). PR #35 set 64Mi limit and
+    # the sidecar OOMKilled in startup loop with exitCode=137. Bumped to
+    # 256Mi based on live-patched value that recovered the pod.
     sidecar:
       resources:
         requests:
           cpu: 10m
-          memory: 32Mi
-        limits:
-          cpu: 50m
           memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 256Mi
 
     # Canary DaemonSet — one per node. Idle 1-4m/14-41Mi.
     lokiCanary:
