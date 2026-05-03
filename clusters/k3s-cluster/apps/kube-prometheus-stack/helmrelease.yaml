@@ -82,15 +82,20 @@ spec:
           cpu: 500m
           memory: 2Gi
       # sc-dashboard and sc-datasources sidecars use the shared sidecar
-      # value path. Both are tiny (Python file watchers).
+      # value path. Idle ~20Mi but startup spike (initial ConfigMap
+      # list/watch) can hit 100-200Mi. PR #34 set 64Mi limit; loki's
+      # equivalent sidecar (loki-sc-rules) OOMKilled with the same value
+      # in PR #35 → had to bump to 256Mi in PR #36. Pre-empting that
+      # trap here for the grafana sidecars before they hit it on next
+      # chart upgrade or pod restart.
       sidecar:
         resources:
           requests:
             cpu: 10m
-            memory: 32Mi
-          limits:
-            cpu: 50m
             memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 256Mi
       # Ensure admin password is set or use default (prom-operator)
       adminPassword: "prom-operator"
 
