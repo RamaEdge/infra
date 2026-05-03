@@ -56,8 +56,12 @@ spec:
     # Single binary configuration
     singleBinary:
       replicas: 1
+      # Idle ~50m/350Mi. Memory limit was 1Gi (set previously); adding the
+      # missing CPU limit here. 500m gives generous headroom for bursty
+      # log ingestion.
       resources:
         limits:
+          cpu: 500m
           memory: 1Gi
         requests:
           cpu: 100m
@@ -66,6 +70,27 @@ spec:
         enabled: true
         storageClass: longhorn
         size: 200Gi
+
+    # loki-sc-rules sidecar (kiwi k8s-sidecar) — watches ConfigMaps for
+    # rule files. Tiny Python watcher.
+    sidecar:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 50m
+          memory: 64Mi
+
+    # Canary DaemonSet — one per node. Idle 1-4m/14-41Mi.
+    lokiCanary:
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
 
     # Disable other deployment modes
     backend:
