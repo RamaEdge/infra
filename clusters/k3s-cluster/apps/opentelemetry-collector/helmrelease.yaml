@@ -247,9 +247,15 @@ spec:
         - port: prometheus
           interval: 30s
 
-    # Resource limits for RPi/ARM nodes
+    # Resource limits for RPi/ARM nodes.
+    # Observed per-node usage 21-43m / 85-225Mi (varies with log throughput;
+    # bl-01 carries the heaviest logging load). The memory_limiter processor
+    # is configured at 400Mi soft limit (+100Mi spike), which means the
+    # collector self-throttles before container OOM. CPU limit added at 500m
+    # (~10x observed peak) so a runaway log spike can't starve the node.
     resources:
       limits:
+        cpu: 500m
         memory: 512Mi
       requests:
         cpu: 100m
