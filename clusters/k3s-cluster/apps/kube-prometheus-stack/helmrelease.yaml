@@ -82,20 +82,21 @@ spec:
           cpu: 500m
           memory: 2Gi
       # sc-dashboard and sc-datasources sidecars use the shared sidecar
-      # value path. Idle ~20Mi but startup spike (initial ConfigMap
-      # list/watch) can hit 100-200Mi. PR #34 set 64Mi limit; loki's
-      # equivalent sidecar (loki-sc-rules) OOMKilled with the same value
-      # in PR #35 → had to bump to 256Mi in PR #36. Pre-empting that
-      # trap here for the grafana sidecars before they hit it on next
-      # chart upgrade or pod restart.
+      # value path. PR #34 set 64Mi; loki's equivalent (loki-sc-rules)
+      # OOMKilled at 64Mi → bumped to 256Mi in PR #36, applied here too.
+      # But 256Mi was STILL not enough: both grafana sidecars steady-state
+      # at ~250Mi (k8s-sidecar watch holds all 34 dashboard CMs resident),
+      # so sc-dashboard repeatedly OOMKilled (exit 137) → pod stuck 2/3,
+      # held out of Service endpoints → nginx 503. Bumped to 512Mi for
+      # real headroom above the observed ~250Mi steady-state.
       sidecar:
         resources:
           requests:
             cpu: 10m
-            memory: 64Mi
+            memory: 128Mi
           limits:
             cpu: 100m
-            memory: 256Mi
+            memory: 512Mi
       # Ensure admin password is set or use default (prom-operator)
       adminPassword: "prom-operator"
 
