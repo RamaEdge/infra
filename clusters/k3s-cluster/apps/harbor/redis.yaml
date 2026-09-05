@@ -49,7 +49,14 @@ spec:
           type: RuntimeDefault
       containers:
       - name: redis
-        image: redis:8-alpine
+        # Pinned to an exact patch version, not a floating tag. `redis:8-alpine`
+        # resolved to a different Redis on every node (8.6.1/8.6.2/8.8.0/8.10.1)
+        # because imagePullPolicy IfNotPresent keeps whatever each node first
+        # pulled. 8.8.0 on rpi-02 wrote an RDB v14 dump that 8.6.2 on rpi-01
+        # could not load ("Can't handle RDB format version 14"), crash-looping
+        # redis and taking harbor-core + jobservice down with it. Keep this
+        # pinned; do not revert to a major-only tag.
+        image: redis:8.10.1-alpine
         ports:
         - containerPort: 6379
         volumeMounts:
