@@ -1,0 +1,54 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: infisical
+  namespace: infisical
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: infisical-standalone
+      version: "1.11.1"
+      sourceRef:
+        kind: HelmRepository
+        name: infisical
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Postgres and Redis are deployed from postgres.yaml / redis.yaml
+    postgresql:
+      enabled: false
+    redis:
+      enabled: false
+
+    infisical:
+      # ENCRYPTION_KEY, AUTH_SECRET, DB_CONNECTION_URI, REDIS_URL, SITE_URL.
+      # Created out-of-band, see SECRETS.md.
+      kubeSecretRef: infisical-secrets
+      replicaCount: 2
+      resources:
+        requests:
+          cpu: 100m
+          memory: 384Mi
+        limits:
+          cpu: "1"
+          memory: 1000Mi
+
+    ingress:
+      enabled: true
+      hostName: vault.theedgeworks.ai
+      ingressClassName: nginx
+      nginx:
+        # Do not deploy the bundled ingress-nginx subchart
+        enabled: false
+      annotations:
+        nginx.ingress.kubernetes.io/proxy-body-size: 10m
+      tls:
+        - secretName: infisical-tls
+          hosts:
+            - vault.theedgeworks.ai

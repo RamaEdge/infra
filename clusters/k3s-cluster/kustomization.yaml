@@ -13,5 +13,6 @@ resources:
   - apps/actions-runner-controller
   - apps/devpi
   - apps/chromadb
+  - apps/infisical
   # apps/minio is deployed via flux-system/minio-tenant-ks.yaml
   # which waits for minio-operator to be ready first
