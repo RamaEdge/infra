@@ -28,6 +28,7 @@ spec:
           Renew the *.theedgeworks.ai wildcard and update TLS_CRT (full chain) and
           TLS_KEY in Infisical (project infrastructure, prod:/tls/theedgeworks-wildcard).
           External Secrets syncs them into every namespace within an hour.
+          infisical/infisical-tls (the vault's own cert) is NOT synced: renew it by hand as well.
 
     - alert: TLSCertificateExpiringCritical
       expr: |

@@ -72,3 +72,5 @@ spec:
           url: monitor.theedgeworks.ai:443
         - name: tls-otel
           url: otel.theedgeworks.ai:443
+        - name: tls-vault
+          url: vault.theedgeworks.ai:443

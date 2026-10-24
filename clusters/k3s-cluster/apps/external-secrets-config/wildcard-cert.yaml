@@ -8,6 +8,12 @@
 # creationPolicy: Orphan on purpose: the Secret is not owned by the
 # ExternalSecret, so deleting or pruning an ExternalSecret can never delete a
 # live TLS secret. The template trims and re-adds the trailing newline.
+#
+# Deliberately NOT synced: infisical/infisical-tls (the vault's own front
+# door). If a bad TLS_CRT were ever saved in the vault it would otherwise be
+# pushed to the vault's own ingress too. It stays a hand-managed copy of the
+# wildcard (see apps/infisical/SECRETS.md) and must be renewed alongside the
+# vault entry.
 ---
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
@@ -73,32 +79,6 @@ spec:
     name: infisical
   target:
     name: harbor-tls
-    creationPolicy: Orphan
-    template:
-      type: kubernetes.io/tls
-      data:
-        tls.crt: "{{ .crt | trim }}\n"
-        tls.key: "{{ .key | trim }}\n"
-  data:
-    - secretKey: crt
-      remoteRef:
-        key: TLS_CRT
-    - secretKey: key
-      remoteRef:
-        key: TLS_KEY
----
-apiVersion: external-secrets.io/v1
-kind: ExternalSecret
-metadata:
-  name: infisical-tls
-  namespace: infisical
-spec:
-  refreshInterval: 1h
-  secretStoreRef:
-    kind: ClusterSecretStore
-    name: infisical
-  target:
-    name: infisical-tls
     creationPolicy: Orphan
     template:
       type: kubernetes.io/tls

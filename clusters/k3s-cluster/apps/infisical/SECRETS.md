@@ -10,7 +10,7 @@ unrecoverable.
 | `infisical-secrets` | `ENCRYPTION_KEY`, `AUTH_SECRET`, `DB_CONNECTION_URI`, `REDIS_URL`, `SITE_URL` | Read by the Infisical pods (`kubeSecretRef`) |
 | `infisical-postgres` | `POSTGRES_PASSWORD` | Postgres superuser password; also used by the backup job |
 | `infisical-redis` | `REDIS_PASSWORD` | Redis `requirepass` |
-| `infisical-tls` | `tls.crt`, `tls.key` | Ingress cert for `vault.theedgeworks.ai`. Copied from the wildcard; renew with the other 7 copies |
+| `infisical-tls` | `tls.crt`, `tls.key` | Ingress cert for `vault.theedgeworks.ai`. A hand-managed copy of the wildcard, **deliberately not synced by External Secrets** so the vault's front door never depends on its own contents. Renew it manually whenever the wildcard is renewed (the `tls-vault` probe alerts on expiry) |
 
 Generation (`ENCRYPTION_KEY` must be 32 hex chars, i.e. 128 bit):
 
