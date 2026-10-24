@@ -1,0 +1,74 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: blackbox-exporter
+  namespace: monitoring
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: prometheus-blackbox-exporter
+      version: "11.20.2"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # PSS=restricted compliance: chart already sets runAsNonRoot, drop ALL,
+    # readOnlyRootFs and allowPrivEsc=false on the container; only the
+    # pod-level seccompProfile is missing.
+    podSecurityContext:
+      seccompProfile:
+        type: RuntimeDefault
+
+    resources:
+      limits:
+        cpu: 100m
+        memory: 64Mi
+      requests:
+        cpu: 10m
+        memory: 32Mi
+
+    config:
+      modules:
+        # TLS handshake only (no HTTP request) so the probe reflects the
+        # certificate served by ingress, independent of backend health.
+        # Verification is on: an expired or broken chain fails the probe.
+        tls_connect:
+          prober: tcp
+          timeout: 10s
+          tcp:
+            tls: true
+            preferred_ip_protocol: ip4
+
+    # One ServiceMonitor per public host. These hosts all serve the
+    # manually-managed *.theedgeworks.ai wildcard (no cert-manager), so
+    # these probes are the only thing watching for expiry.
+    # Alerts: monitoring-config/prometheusrule-certificates.yaml
+    serviceMonitor:
+      enabled: true
+      defaults:
+        module: tls_connect
+        interval: 5m
+        scrapeTimeout: 30s
+      targets:
+        - name: tls-claudedb
+          url: claudedb.theedgeworks.ai:443
+        - name: tls-pypi
+          url: pypi.theedgeworks.ai:443
+        - name: tls-harbor
+          url: harbor.theedgeworks.ai:443
+        - name: tls-auth
+          url: auth.theedgeworks.ai:443
+        - name: tls-longhorn
+          url: longhorn.theedgeworks.ai:443
+        - name: tls-monitor
+          url: monitor.theedgeworks.ai:443
+        - name: tls-otel
+          url: otel.theedgeworks.ai:443

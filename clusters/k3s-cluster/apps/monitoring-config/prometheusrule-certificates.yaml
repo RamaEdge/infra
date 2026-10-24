@@ -1,0 +1,72 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: certificate-alerts
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  groups:
+  # TLS certificate expiry for public endpoints, measured by the
+  # blackbox-exporter tls_connect probes (apps/blackbox-exporter).
+  - name: certificates.expiry
+    interval: 5m
+    rules:
+    # Renewal window: the wildcard is renewed manually, so give plenty of lead time
+    - alert: TLSCertificateExpiringSoon
+      expr: |
+        (probe_ssl_earliest_cert_expiry{target=~"tls-.*"} - time()) / 86400 < 30
+      for: 1h
+      labels:
+        severity: warning
+        component: tls
+      annotations:
+        summary: "TLS certificate for {{ $labels.instance }} expires in under 30 days"
+        description: |
+          The certificate served by {{ $labels.instance }} expires in {{ $value | humanize }} days.
+          Renew the *.theedgeworks.ai wildcard and update the TLS secrets
+          (chromadb, devpi, harbor, keycloak, longhorn-system, monitoring/monitor-tls, monitoring/otel-tls).
+
+    - alert: TLSCertificateExpiringCritical
+      expr: |
+        (probe_ssl_earliest_cert_expiry{target=~"tls-.*"} - time()) / 86400 < 7
+      for: 1h
+      labels:
+        severity: critical
+        component: tls
+      annotations:
+        summary: "TLS certificate for {{ $labels.instance }} expires in under 7 days"
+        description: |
+          The certificate served by {{ $labels.instance }} expires in {{ $value | humanize }} days.
+          Clients (docker pulls, pip, OTLP exporters) will start failing once it expires.
+
+    # Once expired (or the chain is broken), verification fails and the
+    # expiry metric disappears, so catch it through the probe result instead.
+    - alert: TLSProbeFailed
+      expr: |
+        probe_success{target=~"tls-.*"} == 0
+      for: 15m
+      labels:
+        severity: critical
+        component: tls
+      annotations:
+        summary: "TLS handshake to {{ $labels.instance }} is failing"
+        description: |
+          The blackbox TLS probe to {{ $labels.instance }} has failed for 15 minutes.
+          Likely causes: expired certificate, missing intermediate in tls.crt,
+          hostname mismatch, or the ingress being unreachable.
+
+    # If the exporter or its ServiceMonitors go away, every rule above goes silent
+    - alert: TLSProbeMetricsMissing
+      expr: |
+        absent(probe_success{target=~"tls-.*"})
+      for: 30m
+      labels:
+        severity: warning
+        component: tls
+      annotations:
+        summary: "No TLS probe metrics from blackbox-exporter"
+        description: |
+          Prometheus has no probe_success series for the TLS probes, so certificate
+          expiry is not being monitored. Check the blackbox-exporter HelmRelease in monitoring.
