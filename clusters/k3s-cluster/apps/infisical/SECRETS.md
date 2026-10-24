@@ -35,3 +35,9 @@ kubectl -n infisical create secret generic infisical-secrets \
    (the DB password may be new if the database is restored into a fresh one).
 2. Restore a dump: `pg_restore -h infisical-postgres -U infisical -d infisical --clean --if-exists infisical-YYYY-MM-DD.dump`
 3. Dumps live on PVC `infisical-backups` (14 days). They are not off-cluster yet.
+
+## First login (admin takeover window)
+Infisical makes the **first account to sign up the instance admin**. Do not
+create the `vault.theedgeworks.ai` DNS record until you are ready to register
+immediately, then create the admin account first and afterwards disable
+sign-up (Admin console > Authentication) so nobody else can register.
