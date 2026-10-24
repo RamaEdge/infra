@@ -11,6 +11,7 @@ resources:
   - opentelemetry-helmrepository.yaml
   - external-secrets-helmrepository.yaml
   - monitoring-config-ks.yaml
+  - external-secrets-config-ks.yaml
 #  - minio-helmrepository.yaml
 #  - minio-tenant-ks.yaml
   - arc-helm.yaml
