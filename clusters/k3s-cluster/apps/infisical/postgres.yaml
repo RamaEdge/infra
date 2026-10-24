@@ -1,0 +1,90 @@
+# Upstream PostgreSQL for Infisical. The chart's bundled Postgres/Redis are
+# Bitnami subcharts (bitnamilegacy images, no longer maintained), so they are
+# disabled and replaced with plain upstream images.
+apiVersion: v1
+kind: Service
+metadata:
+  name: infisical-postgres
+  namespace: infisical
+spec:
+  clusterIP: None
+  selector:
+    app: infisical-postgres
+  ports:
+    - name: postgres
+      port: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: infisical-postgres
+  namespace: infisical
+spec:
+  serviceName: infisical-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: infisical-postgres
+  template:
+    metadata:
+      labels:
+        app: infisical-postgres
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: postgres
+          image: postgres:17.9-alpine
+          ports:
+            - name: postgres
+              containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: infisical
+            - name: POSTGRES_DB
+              value: infisical
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: infisical-postgres
+                  key: POSTGRES_PASSWORD
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "infisical", "-d", "infisical"]
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "infisical", "-d", "infisical"]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        # 2 replicas: this volume holds the source of truth for every secret
+        storageClassName: longhorn-replicated
+        resources:
+          requests:
+            storage: 10Gi

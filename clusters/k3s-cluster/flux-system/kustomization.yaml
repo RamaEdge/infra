@@ -14,3 +14,4 @@ resources:
 #  - minio-helmrepository.yaml
 #  - minio-tenant-ks.yaml
   - arc-helm.yaml
+  - infisical-helmrepository.yaml

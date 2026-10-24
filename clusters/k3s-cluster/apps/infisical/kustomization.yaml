@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Secrets are created out-of-band (see SECRETS.md); they are never in git.
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - redis.yaml
+  - helmrelease.yaml
+  - backup-cronjob.yaml
+  - networkpolicy.yaml

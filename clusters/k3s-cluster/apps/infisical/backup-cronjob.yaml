@@ -1,0 +1,77 @@
+# Nightly logical backup of the Infisical database onto its own replicated
+# volume. Secret values in the dump are encrypted with ENCRYPTION_KEY, so a
+# dump is useless without that key (kept outside the cluster, see SECRETS.md).
+# This protects against corruption/mistakes, NOT against losing the cluster:
+# copy /backups off-cluster as well (Longhorn backup target or similar).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: infisical-backups
+  namespace: infisical
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: longhorn-replicated
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: infisical-db-backup
+  namespace: infisical
+spec:
+  schedule: "30 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 70
+            runAsGroup: 70
+            fsGroup: 70
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: pg-dump
+              image: postgres:17.9-alpine
+              command:
+                - sh
+                - -c
+                - |
+                  set -e
+                  f=/backups/infisical-$(date +%F).dump
+                  pg_dump -h infisical-postgres -U infisical -d infisical -Fc -f "$f"
+                  echo "wrote $f ($(du -h "$f" | cut -f1))"
+                  find /backups -name 'infisical-*.dump' -mtime +14 -delete
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: infisical-postgres
+                      key: POSTGRES_PASSWORD
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+          volumes:
+            - name: backups
+              persistentVolumeClaim:
+                claimName: infisical-backups
