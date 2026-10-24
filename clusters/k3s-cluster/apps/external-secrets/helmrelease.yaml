@@ -1,0 +1,66 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: external-secrets
+  namespace: external-secrets
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: external-secrets
+      version: "2.14.0"
+      sourceRef:
+        kind: HelmRepository
+        name: external-secrets
+        namespace: flux-system
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    installCRDs: true
+
+    # PSS=restricted: the chart already sets runAsNonRoot, drop ALL and
+    # readOnlyRootFs; only the pod-level seccompProfile is missing. The
+    # webhook and cert-controller are separate subcharts with their own
+    # pod security contexts.
+    podSecurityContext:
+      seccompProfile:
+        type: RuntimeDefault
+    webhook:
+      podSecurityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+    certController:
+      podSecurityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      resources:
+        requests:
+          cpu: 10m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 192Mi
+
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+    serviceMonitor:
+      enabled: true
