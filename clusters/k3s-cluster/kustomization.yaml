@@ -9,6 +9,7 @@ resources:
   - apps/loki
   - apps/opentelemetry-collector
   - apps/blackbox-exporter
+  - apps/external-secrets
   - apps/flux-monitoring
   - apps/actions-runner-controller
   - apps/devpi
