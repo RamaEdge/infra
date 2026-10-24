@@ -1,0 +1,218 @@
+# The *.theedgeworks.ai wildcard cert is stored once in Infisical
+# (project infrastructure, prod:/tls/theedgeworks-wildcard: TLS_CRT = full
+# chain, TLS_KEY = private key) and synced into every consumer namespace.
+#
+# To renew: update TLS_CRT and TLS_KEY in Infisical. The secrets below update
+# within refreshInterval; ingress-nginx reloads certs from the Secret itself.
+#
+# creationPolicy: Orphan on purpose: the Secret is not owned by the
+# ExternalSecret, so deleting or pruning an ExternalSecret can never delete a
+# live TLS secret. The template trims and re-adds the trailing newline.
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: chromadb-tls
+  namespace: chromadb
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+  target:
+    name: chromadb-tls
+    creationPolicy: Orphan
+    template:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ .crt | trim }}\n"
+        tls.key: "{{ .key | trim }}\n"
+  data:
+    - secretKey: crt
+      remoteRef:
+        key: TLS_CRT
+    - secretKey: key
+      remoteRef:
+        key: TLS_KEY
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: devpi-tls
+  namespace: devpi
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+  target:
+    name: devpi-tls
+    creationPolicy: Orphan
+    template:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ .crt | trim }}\n"
+        tls.key: "{{ .key | trim }}\n"
+  data:
+    - secretKey: crt
+      remoteRef:
+        key: TLS_CRT
+    - secretKey: key
+      remoteRef:
+        key: TLS_KEY
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: harbor-tls
+  namespace: harbor
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+  target:
+    name: harbor-tls
+    creationPolicy: Orphan
+    template:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ .crt | trim }}\n"
+        tls.key: "{{ .key | trim }}\n"
+  data:
+    - secretKey: crt
+      remoteRef:
+        key: TLS_CRT
+    - secretKey: key
+      remoteRef:
+        key: TLS_KEY
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: infisical-tls
+  namespace: infisical
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+  target:
+    name: infisical-tls
+    creationPolicy: Orphan
+    template:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ .crt | trim }}\n"
+        tls.key: "{{ .key | trim }}\n"
+  data:
+    - secretKey: crt
+      remoteRef:
+        key: TLS_CRT
+    - secretKey: key
+      remoteRef:
+        key: TLS_KEY
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: keycloak-tls
+  namespace: keycloak
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+  target:
+    name: keycloak-tls
+    creationPolicy: Orphan
+    template:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ .crt | trim }}\n"
+        tls.key: "{{ .key | trim }}\n"
+  data:
+    - secretKey: crt
+      remoteRef:
+        key: TLS_CRT
+    - secretKey: key
+      remoteRef:
+        key: TLS_KEY
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: longhorn-tls
+  namespace: longhorn-system
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+  target:
+    name: longhorn-tls
+    creationPolicy: Orphan
+    template:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ .crt | trim }}\n"
+        tls.key: "{{ .key | trim }}\n"
+  data:
+    - secretKey: crt
+      remoteRef:
+        key: TLS_CRT
+    - secretKey: key
+      remoteRef:
+        key: TLS_KEY
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: monitor-tls
+  namespace: monitoring
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+  target:
+    name: monitor-tls
+    creationPolicy: Orphan
+    template:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ .crt | trim }}\n"
+        tls.key: "{{ .key | trim }}\n"
+  data:
+    - secretKey: crt
+      remoteRef:
+        key: TLS_CRT
+    - secretKey: key
+      remoteRef:
+        key: TLS_KEY
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: otel-tls
+  namespace: monitoring
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical
+  target:
+    name: otel-tls
+    creationPolicy: Orphan
+    template:
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ .crt | trim }}\n"
+        tls.key: "{{ .key | trim }}\n"
+  data:
+    - secretKey: crt
+      remoteRef:
+        key: TLS_CRT
+    - secretKey: key
+      remoteRef:
+        key: TLS_KEY
