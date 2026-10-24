@@ -4,7 +4,9 @@ metadata:
   name: devpi
   namespace: devpi
 spec:
-  replicas: 1
+  # Scaled down 2026-10-24: no uploads since 2026-03-15 and edgeworks CI is
+  # dormant. PVC devpi-data is kept; set back to 1 to restore.
+  replicas: 0
   strategy:
     type: Recreate
   selector:
