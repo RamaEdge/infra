@@ -13,9 +13,10 @@ spec:
     namespace: flux-system
   dependsOn:
     - name: infra
+  # The Harbor metrics are PodMonitors (apps/monitoring-config/servicemonitor-harbor.yaml);
+  # this used to wait for a ServiceMonitor/harbor that no longer exists.
   healthChecks:
     - apiVersion: monitoring.coreos.com/v1
-      kind: ServiceMonitor
-      name: harbor
+      kind: PodMonitor
+      name: harbor-exporter
       namespace: monitoring
-
