@@ -28,7 +28,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: devpi-server
-          image: harbor.theedgeworks.ai/base/devpi:v0.6.2
+          image: harbor.theedgeworks.ai/base/devpi:v0.6.3
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
