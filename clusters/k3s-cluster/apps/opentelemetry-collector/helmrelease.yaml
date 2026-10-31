@@ -147,11 +147,10 @@ spec:
                 - "^claude_code\\..*"
 
       exporters:
-        loki:
-          endpoint: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
-          default_labels_enabled:
-            exporter: false
-            job: true
+        # The dedicated `loki` exporter was removed from collector-contrib;
+        # ship logs to Loki's native OTLP endpoint instead.
+        otlphttp/loki:
+          endpoint: http://loki.monitoring.svc.cluster.local:3100/otlp
         # Expose received OTLP metrics as a Prometheus scrape target
         prometheus:
           endpoint: ${env:MY_POD_IP}:9090
@@ -172,7 +171,7 @@ spec:
               - resource
               - batch
             exporters:
-              - loki
+              - otlphttp/loki
           # OTLP logs pipeline (Claude Code events)
           logs/otlp:
             receivers:
@@ -182,7 +181,7 @@ spec:
               - resource/otlp
               - batch
             exporters:
-              - loki
+              - otlphttp/loki
           # OTLP metrics pipeline (Claude Code metrics only)
           metrics:
             receivers:
